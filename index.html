@@ -1,996 +1,221 @@
-<html lang="zh-CN"><head>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOIR - 二次元偶像艺术应援站</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 统一的 Tailwind 配置 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#ffffff',
-                        secondary: '#000000',
-                        accent: '#888888',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'ping-slow': 'ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite',
-                        'scroll-left': 'scrollLeft 30s linear infinite',
-                        'scroll-right': 'scrollRight 30s linear infinite',
-                    },
-                    keyframes: {
-                        'pulse-slow': {
-                            '0%, 100%': { opacity: 1 },
-                            '50%': { opacity: 0.4 },
-                        },
-                        'ping-slow': {
-                            '0%': { transform: 'scale(1)', opacity: 1 },
-                            '75%, 100%': { transform: 'scale(2)', opacity: 0 },
-                        },
-                        'scrollLeft': {
-                            '0%': { transform: 'translateX(0)' },
-                            '100%': { transform: 'translateX(-50%)' },
-                        },
-                        'scrollRight': {
-                            '0%': { transform: 'translateX(-50%)' },
-                            '100%': { transform: 'translateX(0)' },
-                        },
-                    },
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                color: transparent;
-                background-image: linear-gradient(to right, #ffffff, #888888);
-            }
-            .backdrop-blur-sm {
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
-            }
-            .backdrop-blur-md {
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-            }
-            .backdrop-blur-lg {
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-            }
-            .mask-gradient-left {
-                mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
-                -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
-            }
-            .mask-gradient-right {
-                mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
-                -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
-            }
-        }
-    </style>
+    <title>灵动鱼群 - 点击吸引模式</title>
     <style>
-        /* 自定义滚动条 */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #555555;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #888888;
-        }
-        
-        /* 平滑滚动 */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* 灰度滤镜 */
-        .grayscale {
-            filter: grayscale(100%);
-        }
-        .grayscale-0 {
-            filter: grayscale(0%);
-        }
-        
-        /* 图片悬停效果 */
-        .image-hover {
-            transition: all 0.5s ease-out;
-        }
-        .image-hover:hover {
-            transform: scale(1.05);
-            filter: grayscale(0%);
-        }
-        
-        /* 毛玻璃金属按钮 */
-        .glass-metal-btn {
-            position: relative;
-            overflow: hidden;
-            border-radius: 0.5rem;
-            padding: 1px;
-        }
-        .glass-metal-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom right, rgba(100, 100, 100, 0.8), rgba(130, 130, 130, 0.8));
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 0;
-        }
-        .glass-metal-btn::after {
-            content: '';
-            position: absolute;
-            top: -1rem;
-            right: -1rem;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            filter: blur(10px);
-            transition: all 0.3s ease;
-            z-index: 0;
-        }
-        .glass-metal-btn:hover::after {
-            width: 4rem;
-            height: 4rem;
-            background: rgba(255, 255, 255, 0.6);
-        }
-        .glass-metal-btn .btn-content {
-            position: relative;
-            z-index: 1;
-            padding: 0.625rem 1.5rem;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 0.5rem;
-            border: 1px solid rgba(128, 128, 128, 0.7);
-            color: rgba(220, 220, 220, 0.9);
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            transition: all 0.3s ease;
-        }
-        .glass-metal-btn:hover .btn-content {
-            background: rgba(0, 0, 0, 0.6);
-            color: rgba(255, 255, 255, 1);
-        }
-        
-        /* 无限滚动容器 */
-        .infinite-scroll {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }
-        .infinite-scroll .scroll-content {
-            display: flex;
-            width: max-content;
-        }
-        .infinite-scroll .scroll-content.clone {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        
-        /* 流动画廊样式 */
-        .flowing-gallery {
-            width: 100%;
-            overflow: hidden;
-        }
-        .flow-row {
-            width: 100%;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-        .flow-items {
-            display: flex;
-            width: max-content;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-        .flow-row-1 .flow-items {
-            animation-name: flowLeftToRight;
-            animation-duration: 30s;
-        }
-        .flow-row-2 .flow-items {
-            animation-name: flowRightToLeft;
-            animation-duration: 35s;
-        }
-        .flow-item {
-            flex: 0 0 auto;
-            width: 300px;
-            margin-right: 1rem;
-        }
-        .flow-items-clone {
-            display: flex;
-            width: max-content;
-        }
-        @keyframes flowLeftToRight {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-        @keyframes flowRightToLeft {
-            0% {
-                transform: translateX(-50%);
-            }
-            100% {
-                transform: translateX(0);
-            }
-        }
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .flow-item {
-                width: 200px;
-            }
-        }
-        
-        /* 状态指示灯 */
-        .status-indicator {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 1rem;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 0.5rem;
-            border: 1px solid rgba(128, 128, 128, 0.7);
-        }
-        .status-indicator .indicator {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.8);
-            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .status-indicator .indicator::after {
-            content: '';
-            position: absolute;
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        
-        /* 上拉帷幕式页脚 */
-        .curtain-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            min-height: 100vh;
-            background: #000000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 0;
-        }
-        
-        /* 测试模态框 */
-        .test-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
+        body, html {
+            margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
+            overflow: hidden;
+            background-color: #050505;
+            cursor: crosshair;
         }
-        .test-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .test-modal .modal-content {
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            background: rgba(20, 20, 20, 0.9);
-            border-radius: 0.5rem;
-            border: 1px solid rgba(128, 128, 128, 0.7);
-            padding: 2rem;
-            transform: scale(0.9);
-            transition: all 0.3s ease;
-        }
-        .test-modal.active .modal-content {
-            transform: scale(1);
-        }
-        .test-modal .close-btn {
+
+        #ui {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: "Microsoft YaHei", sans-serif;
+            pointer-events: none;
+            user-select: none;
         }
-        .test-modal .close-btn:hover {
-            color: #888888;
-            transform: rotate(90deg);
-        }
-        
-        /* 问题卡片 */
-        .question-card {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            background: rgba(30, 30, 30, 0.8);
-            border-radius: 0.5rem;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-        }
-        .question-card h3 {
-            margin-bottom: 1rem;
-            font-size: 1.125rem;
-            font-weight: 500;
-            color: #ffffff;
-        }
-        .question-card .options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .question-card .option {
-            padding: 0.75rem 1rem;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 0.25rem;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .question-card .option:hover {
-            background: rgba(0, 0, 0, 0.6);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        .question-card .option.selected {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* 结果卡片 */
-        .result-card {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(30, 30, 30, 0.8);
-            border-radius: 0.5rem;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-        }
-        .result-card h3 {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: #ffffff;
-        }
-        .result-card .score {
-            margin-bottom: 1.5rem;
-            font-size: 3rem;
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .result-card .description {
-            margin-bottom: 2rem;
-            font-size: 1.125rem;
-            color: #cccccc;
-        }
-        .result-card .recommendation {
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 0.25rem;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-            text-align: left;
+
+        canvas {
+            display: block;
         }
     </style>
 </head>
-<body class="bg-black text-white font-sans">
-    <!-- 导航栏 -->
-    <header class="fixed top-0 left-0 w-full bg-black/80 backdrop-blur-md z-40 border-b border-gray-800">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                    <span class="text-white font-bold">N</span>
-                </div>
-                <h1 class="text-xl font-bold tracking-wider">NOIR</h1>
-            </div>
-            <nav class="hidden md:flex items-center gap-8">
-                <a href="#home" class="text-gray-300 hover:text-white transition-colors">首页</a>
-                <a href="#gallery" class="text-gray-300 hover:text-white transition-colors">画廊</a>
-                <a href="#about" class="text-gray-300 hover:text-white transition-colors">关于</a>
-            </nav>
-            <button class="md:hidden text-white focus:outline-none">
-                <i class="fa fa-bars text-xl"></i>
-            </button>
-        </div>
-    </header>
+<body>
 
-    <!-- 主内容区 -->
-    <main class="min-h-screen flex flex-col relative z-10">
-        <!-- 首页部分 -->
-        <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden">
-            <!-- 背景图片 -->
-            <div class="absolute inset-0 z-0">
-                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cd1e544ee61748a7b81768f272ac9142~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159584&amp;x-signature=ZkQF%2BveK2tglYd1lUN4Af%2BudzTc%3D" alt="舞台剪影" class="w-full h-full object-cover opacity-60">
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-            </div>
-            
-            <!-- 内容 -->
-            <div class="container mx-auto px-4 z-10 text-center">
-                <h1 class="text-5xl md:text-7xl font-bold mb-4 text-shadow">NOIR</h1>
-                <p class="text-xl md:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto">探索二次元偶像的艺术世界，感受黑白光影中的魅力与情感</p>
-                <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <button class="glass-metal-btn" onclick="scrollToSection('gallery')" style="min-width: 200px;">
-                        <span class="btn-content" style="text-align: center; font-style: italic; text-decoration: none; font-size: 32px; display: block; width: 100%;">探索画廊</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- 状态指示灯 -->
-            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 status-indicator">
-                <div class="indicator"></div>
-                <span class="text-sm text-gray-300">欢迎来到艺术应援站</span>
-            </div>
-        </section>
-
-        <!-- 画廊部分 -->
-        <section id="gallery" class="py-20 bg-black relative overflow-hidden">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">艺术画廊</h2>
-                    <p class="text-gray-400 max-w-2xl mx-auto">黑白镜头下捕捉的每一个瞬间，都是对偶像魅力的极致诠释</p>
-                </div>
-                
-                <!-- 两行循环流动的图片布局 -->
-                <div class="flowing-gallery">
-                    <!-- 第一行：从左到右流动 -->
-                    <div class="flow-row flow-row-1">
-                        <div class="flow-items">
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/f6649e17a7b64c3da738b6037753249f~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159583&amp;x-signature=XxNsw2Cgm%2BDVwNVd4C7kBhtmYXY%3D" alt="偶像肖像" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">光影肖像</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/5afc392fe08f4592a7cc89e4449f66ff~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159584&amp;x-signature=uxE0FbhSlAMfEH9MePrMt576yHE%3D" alt="偶像特写" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">情感眼眸</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/4e875401c6cd45ea91ccab5c0658b25f~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159596&amp;x-signature=eMWqpkWpvwu2J0BEH8QNFeUfIS8%3D" alt="偶像互动" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">心灵对话</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/ac162ff2c78547b597c15694830d61f6~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159583&amp;x-signature=I4wf9DXFuVicaFsoynt43ImX1cM%3D" alt="应援物品" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">应援之物</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cd1e544ee61748a7b81768f272ac9142~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159584&amp;x-signature=ZkQF%2BveK2tglYd1lUN4Af%2BudzTc%3D" alt="舞台表演" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">舞台光芒</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 第二行：从右到左流动 -->
-                    <div class="flow-row flow-row-2">
-                        <div class="flow-items">
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/84d22f196552444b977366c200663366~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159582&amp;x-signature=R6eW4Yk5Xn2l%2FgBxI7m9zC1vA8sD3fE6j" alt="偶像演出" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">舞台瞬间</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/9f4e3c2d1a0b8c7d6e5f4a3b2c1d0e9f~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159583&amp;x-signature=T7yG9hB6nM3kL8jD5fX2cV1bN4mK7pQ8" alt="偶像练习" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">专注时刻</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/abcdef1234567890abcdef1234567890ab~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159584&amp;x-signature=A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6" alt="偶像访谈" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">真实一面</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/1234567890abcdef1234567890abcdef12~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159585&amp;x-signature=Z9y8X7w6V5u4T3s2R1q0P9o8N7m6L5k4" alt="偶像合影" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">团队精神</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flow-item">
-                                <div class="group relative overflow-hidden rounded-md">
-                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/9876543210fedcba9876543210fedcba~tplv-a9rns2rl98-image.image?lk3s=8e244e95&amp;rcl=20260128103247F73CC2A058A2A8211CD8&amp;rrcfp=f06b921b&amp;x-expires=1772159586&amp;x-signature=Q1w2E3r4T5y6U7i8O9p0A1s2D3f4G5h6" alt="偶像生活" class="w-full grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105">
-                                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                        <h3 class="text-white font-medium">日常点滴</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 关于部分 -->
-        <section id="about" class="py-20 bg-black relative">
-            <div class="container mx-auto px-4">
-                <div class="text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">关于 NOIR</h2>
-                    <p class="text-gray-400 max-w-2xl mx-auto">在黑白的世界里，我们用艺术的眼光诠释偶像的魅力</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                    <div class="order-2 md:order-1">
-                        <h3 class="text-2xl font-bold mb-4">艺术与偶像的融合</h3>
-                        <p class="text-gray-300 mb-6">NOIR 是一个致力于以艺术摄影风格展现二次元偶像魅力的应援站点。我们相信，真正的美不需要华丽的色彩，黑白的对比更能凸显本质的魅力。</p>
-                        <p class="text-gray-300 mb-6">通过精心构图和光影处理，我们将偶像的每一个表情、每一个动作都转化为艺术品，让粉丝在欣赏的同时，更深入地感受到偶像的内在魅力。</p>
-                        <div class="glass-metal-btn" onclick="openTestModal()">
-                            <span class="btn-content" style="font-style: italic; text-decoration: underline; text-align: center;">测试你的属性</span>
-                        </div>
-                    </div>
-                    <div class="order-1 md:order-2">
-                        <div class="relative">
-                            <img src="https://random-api.czl.net/pic/loading" alt="偶像特写GIF" class="w-full rounded-md grayscale hover:grayscale-0 transition-all duration-500">
-                            <div class="absolute -bottom-4 -right-4 w-32 h-32 border-2 border-white rounded-md -z-10"></div>
-                            <div class="absolute -top-4 -left-4 w-32 h-32 border-2 border-white rounded-md -z-10"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 无限滚动标签 -->
-                <div class="mt-20">
-                    <div class="infinite-scroll">
-                        <div class="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-black to-transparent z-10"></div>
-                        <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-black to-transparent z-10"></div>
-                        
-                        <div class="scroll-content animate-scroll-left">
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">黑白艺术</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">光影魅力</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">极简主义</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">情感表达</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">艺术摄影</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">NOIR</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">二次元文化</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">美学探索</span>
-                            
-                            <!-- 复制内容确保无缝循环 -->
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">黑白艺术</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">光影魅力</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">极简主义</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">情感表达</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">艺术摄影</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">NOIR</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">二次元文化</span>
-                            <span class="px-4 py-2 rounded-full border border-gray-700 text-gray-300 mr-6">美学探索</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-
-        <!-- 帷幕式页脚占位符 -->
-        <div class="h-screen w-full"></div>
-    </main>
-
-    <!-- 上拉帷幕式页脚 -->
-    <footer class="curtain-footer">
-        <img src="https://random-api.czl.net/pic/normal" alt="页脚图片" class="w-full h-full object-cover">
-    </footer>
-
-    <!-- 测试模态框 -->
-    <div id="testModal" class="test-modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeTestModal()">×</button>
-            
-            <div id="testStart" class="text-center">
-                <h2 class="text-2xl font-bold mb-4">线性代数小测试</h2>
-                <p class="text-gray-400 mb-8">回答以下问题，测试你的线性代数水平，并获取专属学习建议</p>
-                <button class="glass-metal-btn" onclick="startTest()">
-                    <span class="btn-content">开始测试</span>
-                </button>
-            </div>
-            
-            <div id="testQuestions" class="hidden">
-                <h2 class="text-2xl font-bold mb-6">线性代数小测试</h2>
-                
-                <div id="questionContainer">
-                    <!-- 问题将通过 JavaScript 动态生成 -->
-                </div>
-                
-                <div class="flex justify-between mt-8">
-                    <button id="prevBtn" class="glass-metal-btn opacity-50 cursor-not-allowed" disabled="">
-                        <span class="btn-content">上一题</span>
-                    </button>
-                    <button id="nextBtn" class="glass-metal-btn">
-                        <span class="btn-content">下一题</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div id="testResult" class="hidden">
-                <div class="result-card">
-                    <h3>测试结果</h3>
-                    <div class="score" id="resultScore">0</div>
-                    <p class="description" id="resultDescription"></p>
-                    <div class="recommendation" id="resultRecommendation"></div>
-                    <button class="glass-metal-btn mt-8" onclick="restartTest()">
-                        <span class="btn-content">重新测试</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div id="ui">
+        <h1>深海鱼群</h1>
+        <p>移动：驱散鱼儿</p>
+        <p><strong>按住鼠标左键：吸引鱼群聚拢</strong></p>
     </div>
+    <canvas id="fishCanvas"></canvas>
 
     <script>
-        // 线性代数测试问题数据
-        const questions = [
-            {
-                id: 1,
-                text: "矩阵 A 的行列式为 0，这意味着什么？",
-                options: [
-                    { id: "q1o1", text: "矩阵 A 是可逆的", value: "advanced" },
-                    { id: "q1o2", text: "矩阵 A 是奇异的（不可逆）", value: "beginner" },
-                    { id: "q1o3", text: "矩阵 A 是对称的", value: "intermediate" },
-                    { id: "q1o4", text: "矩阵 A 是对角的", value: "expert" }
-                ]
-            },
-            {
-                id: 2,
-                text: "向量空间的维数等于什么？",
-                options: [
-                    { id: "q2o1", text: "向量的个数", value: "beginner" },
-                    { id: "q2o2", text: "基中向量的个数", value: "intermediate" },
-                    { id: "q2o3", text: "向量的长度", value: "advanced" },
-                    { id: "q2o4", text: "向量的分量个数", value: "expert" }
-                ]
-            },
-            {
-                id: 3,
-                text: "特征值和特征向量的关系是什么？",
-                options: [
-                    { id: "q3o1", text: "Av = λv，其中 A 是矩阵，v 是特征向量，λ 是特征值", value: "expert" },
-                    { id: "q3o2", text: "Av = vλ，其中 A 是矩阵，v 是特征向量，λ 是特征值", value: "intermediate" },
-                    { id: "q3o3", text: "A + v = λ，其中 A 是矩阵，v 是特征向量，λ 是特征值", value: "beginner" },
-                    { id: "q3o4", text: "A × v = λ，其中 A 是矩阵，v 是特征向量，λ 是特征值", value: "advanced" }
-                ]
-            },
-            {
-                id: 4,
-                text: "线性方程组 Ax = b 有解的条件是什么？",
-                options: [
-                    { id: "q4o1", text: "矩阵 A 的秩等于增广矩阵 [A|b] 的秩", value: "expert" },
-                    { id: "q4o2", text: "矩阵 A 是方阵", value: "beginner" },
-                    { id: "q4o3", text: "矩阵 A 的行列式不为零", value: "intermediate" },
-                    { id: "q4o4", text: "向量 b 是零向量", value: "advanced" }
-                ]
-            },
-            {
-                id: 5,
-                text: "正交矩阵的性质是什么？",
-                options: [
-                    { id: "q5o1", text: "其转置等于其逆矩阵", value: "expert" },
-                    { id: "q5o2", text: "其行列式为 0", value: "beginner" },
-                    { id: "q5o3", text: "其所有元素都是正数", value: "advanced" },
-                    { id: "q5o4", text: "其行向量长度不相等", value: "intermediate" }
-                ]
-            }
-        ];
+        const canvas = document.getElementById('fishCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // 线性代数测试结果类型
-        const resultTypes = [
-            {
-                type: "beginner",
-                name: "线性代数初学者",
-                description: "你正在开始线性代数的学习之旅，对基本概念有初步了解。",
-                recommendation: "建议你从基础概念开始，系统学习矩阵运算、向量空间和线性变换等基础知识。可以通过在线课程、教材和练习题来巩固你的理解。"
-            },
-            {
-                type: "intermediate",
-                name: "线性代数进阶者",
-                description: "你已经掌握了线性代数的基本概念，并开始理解更深入的理论。",
-                recommendation: "建议你深入学习特征值、特征向量、正交性和二次型等进阶 topics。可以尝试解决更复杂的问题，或者探索线性代数在计算机图形学、机器学习等领域的应用。"
-            },
-            {
-                type: "advanced",
-                name: "线性代数高级学习者",
-                description: "你对线性代数有深入的理解，能够应用其理论解决复杂问题。",
-                recommendation: "建议你研究线性代数的高级主题，如矩阵分解、谱理论、数值线性代数等。可以尝试阅读学术论文，或者将线性代数应用到你的专业领域中。"
-            },
-            {
-                type: "expert",
-                name: "线性代数专家",
-                description: "你对线性代数有全面而深入的理解，是这方面的专家。",
-                recommendation: "建议你探索线性代数的前沿研究领域，或者将你的知识传授给他人。你可以考虑参与研究项目，或者开发新的教学方法和资源。"
-            }
-        ];
+        let width, height;
+        const fishArray = [];
+        const numFish = 200; 
+        const mouse = { x: -1000, y: -1000, active: false };
 
-        // 当前问题索引
-        let currentQuestionIndex = 0;
-        // 用户选择的答案
-        let userAnswers = {};
+        // 基础配置
+        const config = {
+            maxSpeed: 3,
+            perceptionRadius: 60,
+            avoidanceRadius: 25,
+            mouseAvoidanceRadius: 120,
+            attractionStrength: 0.8 // 吸引力强度
+        };
 
-        // 滚动到指定部分
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth' });
-            }
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
 
-        // 打开测试模态框
-        function openTestModal() {
-            const modal = document.getElementById('testModal');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // 关闭测试模态框
-        function closeTestModal() {
-            const modal = document.getElementById('testModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            // 重置测试
-            resetTest();
-        }
-
-        // 重置测试
-        function resetTest() {
-            document.getElementById('testStart').classList.remove('hidden');
-            document.getElementById('testQuestions').classList.add('hidden');
-            document.getElementById('testResult').classList.add('hidden');
-            
-            currentQuestionIndex = 0;
-            userAnswers = {};
-        }
-
-        // 开始测试
-        function startTest() {
-            document.getElementById('testStart').classList.add('hidden');
-            document.getElementById('testQuestions').classList.remove('hidden');
-            
-            showQuestion(currentQuestionIndex);
-            updateNavigationButtons();
-        }
-
-        // 显示当前问题
-        function showQuestion(index) {
-            const question = questions[index];
-            const container = document.getElementById('questionContainer');
-            
-            let optionsHtml = '';
-            question.options.forEach(option => {
-                const isSelected = userAnswers[question.id] === option.id;
-                optionsHtml += `
-                    <div class="option ${isSelected ? 'selected' : ''}" onclick="selectOption(${question.id}, '${option.id}')">
-                        <span>${option.text}</span>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = `
-                <div class="question-card">
-                    <h3>${index + 1}. ${question.text}</h3>
-                    <div class="options">
-                        ${optionsHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        // 选择选项
-        function selectOption(questionId, optionId) {
-            userAnswers[questionId] = optionId;
-            
-            // 更新选项样式
-            const options = document.querySelectorAll('.option');
-            options.forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            const selectedOption = document.querySelector(`.option[onclick="selectOption(${questionId}, '${optionId}')"]`);
-            if (selectedOption) {
-                selectedOption.classList.add('selected');
-            }
-            
-            // 更新导航按钮
-            updateNavigationButtons();
-        }
-
-        // 更新导航按钮状态
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            // 上一题按钮
-            if (currentQuestionIndex > 0) {
-                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                prevBtn.disabled = false;
-            } else {
-                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                prevBtn.disabled = true;
-            }
-            
-            // 下一题按钮
-            if (userAnswers[questions[currentQuestionIndex].id]) {
-                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                nextBtn.disabled = false;
-                
-                // 如果是最后一题，改变按钮文本
-                if (currentQuestionIndex === questions.length - 1) {
-                    nextBtn.querySelector('.btn-content').textContent = '查看结果';
-                } else {
-                    nextBtn.querySelector('.btn-content').textContent = '下一题';
-                }
-            } else {
-                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                nextBtn.disabled = true;
-            }
-        }
-
-        // 上一题
-        function prevQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                showQuestion(currentQuestionIndex);
-                updateNavigationButtons();
-            }
-        }
-
-        // 下一题
-        function nextQuestion() {
-            if (currentQuestionIndex < questions.length - 1) {
-                currentQuestionIndex++;
-                showQuestion(currentQuestionIndex);
-                updateNavigationButtons();
-            } else {
-                showResult();
-            }
-        }
-
-        // 显示结果
-        function showResult() {
-            // 计算结果
-            const result = calculateResult();
-            
-            // 更新结果界面
-            document.getElementById('testQuestions').classList.add('hidden');
-            document.getElementById('testResult').classList.remove('hidden');
-            
-            document.getElementById('resultScore').textContent = result.score;
-            document.getElementById('resultDescription').textContent = `${result.name} - ${result.description}`;
-            document.getElementById('resultRecommendation').innerHTML = `<p class="font-medium text-white mb-2">推荐行动：</p><p>${result.recommendation}</p>`;
-        }
-
-        // 计算测试结果
-        function calculateResult() {
-            // 统计各类型的得分
-            const scores = {};
-            
-            questions.forEach(question => {
-                const selectedOptionId = userAnswers[question.id];
-                const selectedOption = question.options.find(option => option.id === selectedOptionId);
-                
-                if (selectedOption) {
-                    const value = selectedOption.value;
-                    scores[value] = (scores[value] || 0) + 1;
-                }
-            });
-            
-            // 找出得分最高的类型
-            let maxScore = 0;
-            let maxType = 'devoted'; // 默认类型
-            
-            for (const type in scores) {
-                if (scores[type] > maxScore) {
-                    maxScore = scores[type];
-                    maxType = type;
-                }
-            }
-            
-            // 计算总体契合度得分（0-100）
-            const totalScore = Math.round((maxScore / questions.length) * 100);
-            
-            // 获取对应的结果类型
-            const resultType = resultTypes.find(type => type.type === maxType) || resultTypes[resultTypes.length - 1];
-            
-            return {
-                type: maxType,
-                name: resultType.name,
-                description: resultType.description,
-                recommendation: resultType.recommendation,
-                score: totalScore
-            };
-        }
-
-        // 重新测试
-        function restartTest() {
-            resetTest();
-            startTest();
-        }
-
-        // 事件监听器
-        document.addEventListener('DOMContentLoaded', function() {
-            // 导航按钮事件
-            document.getElementById('prevBtn').addEventListener('click', prevQuestion);
-            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
-            
-            // 移动端菜单按钮
-            const menuBtn = document.querySelector('button.md\\:hidden');
-            menuBtn.addEventListener('click', function() {
-                // 这里可以添加移动端菜单的显示/隐藏逻辑
-                alert('移动端菜单功能待实现');
-            });
-            
-            // 点击模态框外部关闭
-            const modal = document.getElementById('testModal');
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeTestModal();
-                }
-            });
+        // 鼠标事件监听
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
         });
-    </script>
+        window.addEventListener('mousedown', () => { mouse.active = true; });
+        window.addEventListener('mouseup', () => { mouse.active = false; });
 
-</body></html>
+        resize();
+
+        class Fish {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6;
+                this.accX = 0;
+                this.accY = 0;
+                this.maxSpeed = 2 + Math.random() * 3;
+                // 颜色稍微带点透明感
+                this.color = `hsla(${190 + Math.random() * 40}, 80%, 60%, 0.8)`;
+                this.size = 2 + Math.random() * 3;
+            }
+
+            edges() {
+                if (this.x > width) this.x = 0;
+                else if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                else if (this.y < 0) this.y = height;
+            }
+
+            applyBehaviors(fishes) {
+                let alignment = { x: 0, y: 0 };
+                let cohesion = { x: 0, y: 0 };
+                let separation = { x: 0, y: 0 };
+                let total = 0;
+
+                for (let other of fishes) {
+                    let d = Math.hypot(this.x - other.x, this.y - other.y);
+                    if (other !== this && d < config.perceptionRadius) {
+                        alignment.x += other.vx;
+                        alignment.y += other.vy;
+                        cohesion.x += other.x;
+                        cohesion.y += other.y;
+                        
+                        if (d < config.avoidanceRadius) {
+                            separation.x += (this.x - other.x) / d;
+                            separation.y += (this.y - other.y) / d;
+                        }
+                        total++;
+                    }
+                }
+
+                if (total > 0) {
+                    alignment.x /= total; alignment.y /= total;
+                    this.accX += (alignment.x - this.vx) * 0.05;
+                    this.accY += (alignment.y - this.vy) * 0.05;
+
+                    cohesion.x /= total; cohesion.y /= total;
+                    this.accX += (cohesion.x - this.x) * 0.005;
+                    this.accY += (cohesion.y - this.y) * 0.005;
+
+                    this.accX += separation.x * 0.15;
+                    this.accY += separation.y * 0.15;
+                }
+
+                // --- 交互逻辑 ---
+                let distToMouse = Math.hypot(this.x - mouse.x, this.y - mouse.y);
+                
+                if (mouse.active) {
+                    // 吸引模式：向鼠标位置加速
+                    let forceX = (mouse.x - this.x) / distToMouse;
+                    let forceY = (mouse.y - this.y) / distToMouse;
+                    this.accX += forceX * config.attractionStrength;
+                    this.accY += forceY * config.attractionStrength;
+                    // 吸引时鱼会变得稍微快一点
+                    this.currentMaxSpeed = this.maxSpeed * 1.5;
+                } else {
+                    // 逃逸模式：平时躲避鼠标
+                    if (distToMouse < config.mouseAvoidanceRadius) {
+                        this.accX += (this.x - mouse.x) * 0.03;
+                        this.accY += (this.y - mouse.y) * 0.03;
+                    }
+                    this.currentMaxSpeed = this.maxSpeed;
+                }
+            }
+
+            update() {
+                this.vx += this.accX;
+                this.vy += this.accY;
+
+                const speed = Math.hypot(this.vx, this.vy);
+                if (speed > this.currentMaxSpeed) {
+                    this.vx = (this.vx / speed) * this.currentMaxSpeed;
+                    this.vy = (this.vy / speed) * this.currentMaxSpeed;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.accX = 0;
+                this.accY = 0;
+            }
+
+            draw() {
+                const angle = Math.atan2(this.vy, this.vx);
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(angle);
+
+                // 鱼身
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.size * 2.5, 0);
+                ctx.lineTo(-this.size * 2, -this.size * 1.5);
+                ctx.lineTo(-this.size, 0);
+                ctx.lineTo(-this.size * 2, this.size * 1.5);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // 初始化
+        for (let i = 0; i < numFish; i++) {
+            fishArray.push(new Fish());
+        }
+
+        function animate() {
+            // 背景底色
+            ctx.fillStyle = 'rgba(5, 15, 25, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            // 如果正在点击，画一个淡淡的吸引力圆圈
+            if (mouse.active) {
+                ctx.beginPath();
+                ctx.arc(mouse.x, mouse.y, 50, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+                ctx.stroke();
+            }
+
+            for (let fish of fishArray) {
+                fish.applyBehaviors(fishArray);
+                fish.update();
+                fish.edges();
+                fish.draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
