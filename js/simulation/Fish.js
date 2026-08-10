@@ -69,19 +69,45 @@ export class Fish {
       if (Math.abs(delta) > deadZone) this.angle = target;
     }
 
-    // Very short motion trail: a single faded segment, intentionally subtle.
     const trailFollow = Math.min(1, .12 * dt + .04);
     this.trailX += (this.x - this.trailX) * trailFollow;
     this.trailY += (this.y - this.trailY) * trailFollow;
   }
 
   edge() {
-    if (this.x < -20) this.x = this.width + 20;
-    if (this.x > this.width + 20) this.x = -20;
-    if (this.y < -20) this.y = this.height + 20;
-    if (this.y > this.height + 20) this.y = -20;
-    this.trailX = this.x;
-    this.trailY = this.y;
+    const margin = 20;
+    const jitter = 24;
+    const minY = margin;
+    const maxY = Math.max(minY, this.height - margin);
+    const minX = margin;
+    const maxX = Math.max(minX, this.width - margin);
+
+    // Wrap only after the fish has fully crossed the corresponding edge.
+    // Re-entry gets a small random offset on the perpendicular axis.
+    // Clamp the offset so it can never spawn in a corner/outside the canvas.
+    if (this.x < -margin) {
+      this.x = this.width + margin;
+      this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
+      this.trailX = this.x;
+      this.trailY = this.y;
+    } else if (this.x > this.width + margin) {
+      this.x = -margin;
+      this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
+      this.trailX = this.x;
+      this.trailY = this.y;
+    }
+
+    if (this.y < -margin) {
+      this.y = this.height + margin;
+      this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
+      this.trailX = this.x;
+      this.trailY = this.y;
+    } else if (this.y > this.height + margin) {
+      this.y = -margin;
+      this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
+      this.trailX = this.x;
+      this.trailY = this.y;
+    }
   }
 
   draw(ctx) {
@@ -92,7 +118,6 @@ export class Fish {
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
 
-    // Subtle cyan motion trail behind the fish.
     const speed = Math.hypot(this.vx, this.vy);
     if (speed > .35) {
       ctx.save();
