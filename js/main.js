@@ -1,0 +1,1 @@
+import {CONFIG,isMobile} from './config.js';import {SpatialGrid} from './simulation/SpatialGrid.js';window.AQUA={CONFIG,isMobile,SpatialGrid};import('./aqua.js');
