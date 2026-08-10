@@ -1,6 +1,7 @@
 export const Boids = {
   update(fish, grid, neighborRadius = 78, leader = null, formation = null) {
     const r2 = neighborRadius * neighborRadius;
+    const density = formation?.density ?? 1;
     const spacing = formation?.preferredSpacing ?? 30;
     const separationRadius = Math.max(28, spacing + 4);
     const separationRadius2 = separationRadius * separationRadius;
@@ -68,8 +69,9 @@ export const Boids = {
           f.accy += (centerY * invN - f.y) * .00145;
         }
 
-        f.accx += sepX * .25;
-        f.accy += sepY * .25;
+        const separationGain = .25 * Math.max(.9, Math.min(1.18, density));
+        f.accx += sepX * separationGain;
+        f.accy += sepY * separationGain;
 
         if (avgSpeed > .12) {
           let delta = Math.atan2(avgVY, avgVX) - f.angle;
