@@ -17,7 +17,7 @@ export class Simulation {
     this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
-    this.school = new School();
+    this.school = new School([], null, { preferredSpacing: 30, compactness: 1 });
     this.leader = null;
     this.reset();
   }
@@ -35,7 +35,7 @@ export class Simulation {
     leader.limit = leader.max;
 
     const fish = Array.from({ length: Math.max(0, this.count - 1) }, () => new Fish(this.width, this.height));
-    this.school = new School(fish, leader);
+    this.school = new School(fish, leader, { preferredSpacing: 30, compactness: 1 });
     this.school.setLeader(leader);
     this.fish = this.school.fish;
     this.leader = leader;
@@ -62,7 +62,7 @@ export class Simulation {
   step(dt = 1) {
     this.grid.build(this.fish);
     this.flowGrid.build(this.flows);
-    Boids.update(this.fish, this.grid, 78, this.leader);
+    Boids.update(this.fish, this.grid, 78, this.leader, this.school.getFormation());
 
     for (const f of this.fish) this.#interact(f);
     this.school.update(dt, this.speed, this.width, this.height);
