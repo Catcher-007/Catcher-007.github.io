@@ -83,31 +83,27 @@ export class Fish {
   edge() {
     const margin = 20;
     const jitter = 24;
-    const minY = margin;
+    const minY = Math.min(margin, Math.max(0, this.height * .5));
     const maxY = Math.max(minY, this.height - margin);
-    const minX = margin;
+    const minX = Math.min(margin, Math.max(0, this.width * .5));
     const maxX = Math.max(minX, this.width - margin);
 
-    if (this.x < -margin) {
-      this.x = this.width + margin;
+    const outLeft = this.x < -margin;
+    const outRight = this.x > this.width + margin;
+    const outTop = this.y < -margin;
+    const outBottom = this.y > this.height + margin;
+
+    if (outLeft || outRight) {
+      this.x = outLeft ? this.width + margin : -margin;
       this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
-    } else if (this.x > this.width + margin) {
-      this.x = -margin;
-      this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
     }
 
-    if (this.y < -margin) {
-      this.y = this.height + margin;
+    if (outTop || outBottom) {
+      this.y = outTop ? this.height + margin : -margin;
       this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
-    } else if (this.y > this.height + margin) {
-      this.y = -margin;
-      this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
+    }
+
+    if (outLeft || outRight || outTop || outBottom) {
       this.trailX = this.x;
       this.trailY = this.y;
     }
