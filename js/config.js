@@ -1,0 +1,1 @@
+export const isMobile=matchMedia('(max-width:700px)').matches;export const CONFIG={cell:64,flowCell:128,flowRadius:128,maxFlow:isMobile?7:14,maxRipple:isMobile?3:6,simHz:isMobile?30:45,count:isMobile?70:160,speed:isMobile?.8:.9,attraction:isMobile?.6:.65};
