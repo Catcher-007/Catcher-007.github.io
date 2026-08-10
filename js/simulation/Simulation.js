@@ -15,6 +15,7 @@ export class Simulation {
     this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
+    this.leader = null;
     this.reset();
   }
 
@@ -22,6 +23,13 @@ export class Simulation {
 
   reset() {
     this.fish = Array.from({ length: this.count }, () => new Fish(this.width, this.height));
+    this.leader = this.fish.length ? this.fish[(Math.random() * this.fish.length) | 0] : null;
+    if (this.leader) {
+      this.leader.isLeader = true;
+      this.leader.size *= 1.12;
+      this.leader.max *= 1.04;
+      this.leader.limit = this.leader.max;
+    }
     this.bubbles.items.length = 0;
   }
 
@@ -44,10 +52,10 @@ export class Simulation {
 
   step(dt = 1) {
     this.grid.build(this.fish); this.flowGrid.build(this.flows);
-    Boids.update(this.fish, this.grid, 78);
+    Boids.update(this.fish, this.grid, 78, this.leader);
+    if (this.leader) this.#lead(this.leader, dt);
     for (const f of this.fish) { this.#interact(f); f.update(this.speed, dt); f.edge(); }
 
-    // Sparse bubbles keep the aquarium alive without turning the canvas into a particle field.
     if (Math.random() < .018 * (this.mobile ? .65 : 1)) {
       const source = this.fish[(Math.random() * this.fish.length) | 0];
       if (source) this.bubbles.spawn(source.x, source.y, .75 + this.speed * .5);
@@ -63,6 +71,24 @@ export class Simulation {
   }
 
   drawBubbles(ctx) { this.bubbles.draw(ctx); }
+
+  #lead(f, dt) {
+    const margin = 90;
+    let steerX = Math.cos(f.leaderPhase) * .018;
+    let steerY = Math.sin(f.leaderPhase * .73 + 1.2) * .014;
+
+    const left = f.x < margin, right = f.x > this.width - margin;
+    const top = f.y < margin, bottom = f.y > this.height - margin;
+    if (left) steerX += (margin - f.x) / margin * .06;
+    if (right) steerX -= (f.x - (this.width - margin)) / margin * .06;
+    if (top) steerY += (margin - f.y) / margin * .06;
+    if (bottom) steerY -= (f.y - (this.height - margin)) / margin * .06;
+
+    f.leaderPhase += .012 * dt;
+    f.leaderTurn = f.leaderTurn * Math.pow(.94, dt) + (steerX + steerY) * .5;
+    f.accx += steerX;
+    f.accy += steerY;
+  }
 
   #interact(f) {
     let ax = f.accx, ay = f.accy;
