@@ -1,0 +1,5 @@
+export class Renderer {
+  constructor(canvas,{mobile=false}={}){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.mobile=mobile;this.scale=1}
+  resize(width,height,scale=1){this.scale=scale;const dpr=Math.min(devicePixelRatio||1,this.mobile?1.15:1.25)*scale;this.canvas.width=Math.max(1,width*dpr);this.canvas.height=Math.max(1,height*dpr);this.ctx.setTransform(dpr,0,0,dpr,0,0);this.width=width;this.height=height}
+  render(sim){const c=this.ctx;c.fillStyle='#06121f';c.fillRect(0,0,this.width,this.height);for(const f of sim.fish)f.draw(c);c.globalAlpha=.1;c.strokeStyle='#65e8ff';c.lineWidth=1;for(const q of sim.flows){c.beginPath();c.arc(q.x,q.y,7+q.p*4*(1-q.life*.5),0,Math.PI*2);c.stroke()}c.globalAlpha=.18;c.strokeStyle='#9ceeff';for(const r of sim.ripples){c.beginPath();c.arc(r.x,r.y,r.r,0,Math.PI*2);c.stroke()}c.globalAlpha=1}
+}
