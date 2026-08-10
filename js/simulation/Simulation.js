@@ -21,50 +21,34 @@ export class Simulation {
     this.mobile = mobile;
     this.maxFlow = maxFlow;
     this.maxRipple = maxRipple;
-
     this.grid = new SpatialGrid(cell);
     this.flowGrid = new SpatialGrid(flowCell);
     this.fish = [];
     this.flows = [];
     this.ripples = [];
-    this.mouse = { x: -9999, y: -9999, down: false, inside: false };
+    this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0 };
     this.reset();
   }
 
   resize(width, height) {
     this.width = width;
     this.height = height;
-    for (const f of this.fish) {
-      f.width = width;
-      f.height = height;
-    }
+    for (const f of this.fish) { f.width = width; f.height = height; }
   }
 
   reset() {
-    this.fish = Array.from(
-      { length: this.count },
-      () => new Fish(this.width, this.height)
-    );
+    this.fish = Array.from({ length: this.count }, () => new Fish(this.width, this.height));
   }
 
   setParams({ count, speed, attraction } = {}) {
-    if (count !== undefined && count !== this.count) {
-      this.count = count;
-      this.reset();
-    }
+    if (count !== undefined && count !== this.count) { this.count = count; this.reset(); }
     if (speed !== undefined) this.speed = speed;
     if (attraction !== undefined) this.attraction = attraction;
   }
 
   addFlow(x, y, vx, vy) {
-    this.flows.push({
-      x,
-      y,
-      vx,
-      vy,
-      p: Math.min(2.1, Math.hypot(vx, vy) * .4),
-      life: 1
-    });
+    const power = Math.min(2.4, Math.hypot(vx, vy) * .55);
+    this.flows.push({ x, y, vx, vy, p: power, life: 1 });
     if (this.flows.length > this.maxFlow) this.flows.shift();
   }
 
@@ -89,12 +73,10 @@ export class Simulation {
     const flowDecay = this.mobile ? .09 : .07;
     const rippleDecay = this.mobile ? .07 : .055;
     const rippleGrowth = this.mobile ? 3 : 3.8;
-
     for (let i = this.flows.length - 1; i >= 0; i--) {
       this.flows[i].life -= flowDecay * frameUnits;
       if (this.flows[i].life <= 0) this.flows.splice(i, 1);
     }
-
     for (let i = this.ripples.length - 1; i >= 0; i--) {
       const r = this.ripples[i];
       r.r += rippleGrowth * frameUnits;
@@ -106,10 +88,31 @@ export class Simulation {
   #interact(f) {
     let ax = f.accx;
     let ay = f.accy;
-
     const dx = this.mouse.x - f.x;
     const dy = this.mouse.y - f.y;
     const d2 = dx * dx + dy * dy;
+
+    // ① Mouse-generated water current. Fast pointer motion creates a local
+    // directional field; it decays naturally with the flow lifetime.
+    if (d2 < 22500 && d2 > 0) {
+      const d = Math.sqrt(d2);
+      const fall = 1 - d / 150;
+      if (fall > 0 && this.mouse.speed > .15) {
+        const inv = 1 / d;
+        const swirl = .16 * fall;
+        ax += (this.mouse.speedX * .075 + -dy * inv * swirl) * fall;
+        ay += (this.mouse.speedY * .075 + dx * inv * swirl) * fall;
+      }
+    }
+
+    // ② Strong fast mouse motion acts as a short shock wave.
+    if (this.mouse.inside && this.mouse.speed > 2.4 && d2 < 10000 && d2 > 0) {
+      const d = Math.sqrt(d2);
+      const force = (1 - d / 100) * .85 * Math.min(1.5, this.mouse.speed / 4);
+      ax -= dx / d * force;
+      ay -= dy / d * force;
+      f.scare = Math.min(1, f.scare + .35);
+    }
 
     if (this.mouse.down && d2 > 64) {
       const inv = 1 / Math.sqrt(d2);
@@ -129,20 +132,18 @@ export class Simulation {
 
     this.flowGrid.near(f.x, f.y, i => {
       const q = this.flows[i];
-      const qx = f.x - q.x;
-      const qy = f.y - q.y;
+      const qx = f.x - q.x, qy = f.y - q.y;
       const qd2 = qx * qx + qy * qy;
-      if (qd2 < 16384) {
+      if (qd2 < 19600) {
         const d = Math.sqrt(qd2) || 1;
-        const fall = 1 - d / 128;
-        ax += q.vx * q.p * fall * .045;
-        ay += q.vy * q.p * fall * .045;
+        const fall = 1 - d / 140;
+        ax += q.vx * q.p * fall * .055;
+        ay += q.vy * q.p * fall * .055;
       }
     });
 
     for (const r of this.ripples) {
-      const rx = f.x - r.x;
-      const ry = f.y - r.y;
+      const rx = f.x - r.x, ry = f.y - r.y;
       const rd2 = rx * rx + ry * ry;
       const rr = r.r + 42;
       if (rd2 < rr * rr) {
