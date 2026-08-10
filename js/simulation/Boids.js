@@ -1,12 +1,14 @@
 export const Boids = {
-  update(fish, grid, neighborRadius = 78, leader = null) {
+  update(fish, grid, neighborRadius = 78, leader = null, formation = null) {
     const r2 = neighborRadius * neighborRadius;
-    const separationRadius = 34;
+    const spacing = formation?.preferredSpacing ?? 30;
+    const separationRadius = Math.max(28, spacing + 4);
     const separationRadius2 = separationRadius * separationRadius;
     const leaderRadius = 190;
     const leaderRadius2 = leaderRadius * leaderRadius;
     const leaderRing1 = 62;
     const leaderRing2 = 124;
+    const aspect = formation?.aspectRatio ?? 1;
 
     for (let i = 0; i < fish.length; i++) {
       const f = fish[i];
@@ -30,9 +32,9 @@ export const Boids = {
         n++;
 
         if (d2 < separationRadius2) {
-          const d = Math.sqrt(d2);
+          const d = Math.sqrt(Math.max(d2, .5));
           const falloff = 1 - d / separationRadius;
-          const w = falloff * falloff / Math.max(d, 0.5);
+          const w = falloff * falloff / d;
           sepX += dx * w;
           sepY += dy * w;
         }
@@ -42,15 +44,33 @@ export const Boids = {
         const invN = 1 / n;
         const avgVX = alignX * invN;
         const avgVY = alignY * invN;
+        const avgSpeed = Math.hypot(avgVX, avgVY);
 
         f.accx += (avgVX - f.vx) * .052;
         f.accy += (avgVY - f.vy) * .052;
-        f.accx += (centerX * invN - f.x) * .00145;
-        f.accy += (centerY * invN - f.y) * .00145;
+
+        if (avgSpeed > .08) {
+          const inv = 1 / avgSpeed;
+          const fx = avgVX * inv;
+          const fy = avgVY * inv;
+          const lx = -fy;
+          const ly = fx;
+          const cx = centerX * invN - f.x;
+          const cy = centerY * invN - f.y;
+          const along = cx * fx + cy * fy;
+          const lateral = cx * lx + cy * ly;
+          const longitudinalGain = .0017 / aspect;
+          const lateralGain = .0017 * Math.min(1.35, aspect);
+          f.accx += fx * along * longitudinalGain + lx * lateral * lateralGain;
+          f.accy += fy * along * longitudinalGain + ly * lateral * lateralGain;
+        } else {
+          f.accx += (centerX * invN - f.x) * .00145;
+          f.accy += (centerY * invN - f.y) * .00145;
+        }
+
         f.accx += sepX * .25;
         f.accy += sepY * .25;
 
-        const avgSpeed = Math.hypot(avgVX, avgVY);
         if (avgSpeed > .12) {
           let delta = Math.atan2(avgVY, avgVX) - f.angle;
           while (delta > Math.PI) delta -= Math.PI * 2;
