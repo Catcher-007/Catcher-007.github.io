@@ -58,17 +58,13 @@ export class Fish {
     this.accy = 0;
     this.tail = 0;
 
-    // Use a stable velocity direction. Ignore tiny angular changes so the
-    // fish does not visually twitch when Boids forces fluctuate by a small amount.
     if (ns > .08) {
       const target = Math.atan2(this.vy, this.vx);
       let delta = target - this.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
       const deadZone = .035;
-      if (Math.abs(delta) > deadZone) {
-        this.angle = target;
-      }
+      if (Math.abs(delta) > deadZone) this.angle = target;
     }
   }
 
@@ -82,28 +78,60 @@ export class Fish {
   draw(ctx) {
     const z = .68 + this.depth * .7;
     const s = this.size * z;
-    const a = .18 + this.depth * .7;
+    const a = .2 + this.depth * .68;
     const ang = this.angle;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
-    const p = [
-      [3.1 * s, 0],
-      [-.45 * s, -.7 * s],
-      [-1.55 * s, -1.25 * s],
-      [-.85 * s, 0],
-      [-1.55 * s, 1.25 * s],
-      [-.45 * s, .7 * s]
-    ];
 
+    const tx = (px, py) => this.x + px * cs - py * sn;
+    const ty = (px, py) => this.y + px * sn + py * cs;
+
+    // Clean, recognizable fish silhouette: rounded body + forked tail + fins.
+    const bodyRx = 2.15 * s;
+    const bodyRy = .82 * s;
+    const tailX = -2.05 * s;
+    const tailW = 1.05 * s;
+
+    ctx.save();
     ctx.globalAlpha = a;
     ctx.fillStyle = this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
+
+    // Body.
     ctx.beginPath();
-    for (let i = 0; i < p.length; i++) {
-      const X = this.x + p[i][0] * cs - p[i][1] * sn;
-      const Y = this.y + p[i][0] * sn + p[i][1] * cs;
-      i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
-    }
+    ctx.ellipse(this.x + .45 * s * cs, this.y + .45 * s * sn, bodyRx, bodyRy, ang, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Forked tail.
+    ctx.beginPath();
+    ctx.moveTo(tx(tailX, 0), ty(tailX, 0));
+    ctx.lineTo(tx(tailX - .95 * s, -tailW), ty(tailX - .95 * s, -tailW));
+    ctx.lineTo(tx(tailX - .58 * s, 0), ty(tailX - .58 * s, 0));
+    ctx.lineTo(tx(tailX - .95 * s, tailW), ty(tailX - .95 * s, tailW));
     ctx.closePath();
     ctx.fill();
+
+    // Dorsal and lower fins.
+    ctx.beginPath();
+    ctx.moveTo(tx(.05 * s, -.55 * s), ty(.05 * s, -.55 * s));
+    ctx.lineTo(tx(-.65 * s, -1.05 * s), ty(-.65 * s, -1.05 * s));
+    ctx.lineTo(tx(-.75 * s, -.35 * s), ty(-.75 * s, -.35 * s));
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(tx(.05 * s, .55 * s), ty(.05 * s, .55 * s));
+    ctx.lineTo(tx(-.65 * s, 1.05 * s), ty(-.65 * s, 1.05 * s));
+    ctx.lineTo(tx(-.75 * s, .35 * s), ty(-.75 * s, .35 * s));
+    ctx.closePath();
+    ctx.fill();
+
+    // Small eye gives the silhouette a clear head direction without animation.
+    ctx.globalAlpha = Math.min(1, a + .18);
+    ctx.fillStyle = '#d9fbff';
+    ctx.beginPath();
+    ctx.arc(tx(1.72 * s, -.27 * s), ty(1.72 * s, -.27 * s), Math.max(.28, .16 * s), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   }
 }
