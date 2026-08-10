@@ -63,13 +63,16 @@ export class Fish {
     this.tail = 0;
 
     if (ns > .08) {
-      const target = Math.atan2(this.vy, this.vx);
+      const target = Math.atan2(this.vy, this.vx) + this.turnWave * .32;
       let delta = target - this.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
       const deadZone = .035;
       if (Math.abs(delta) > deadZone) this.angle = target;
     }
+
+    // Let the propagated turn fade out smoothly after the local wave passes.
+    this.turnWave *= Math.pow(.82, dt);
 
     const trailFollow = Math.min(1, .12 * dt + .04);
     this.trailX += (this.x - this.trailX) * trailFollow;
