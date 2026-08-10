@@ -8,6 +8,8 @@ export class School {
     this.preferredSpacing = preferredSpacing;
     this.compactness = compactness;
     this.aspectRatio = 1;
+    this.localDensity = 1;
+    this.densityTarget = 1;
   }
 
   setLeader(leader) {
@@ -37,10 +39,15 @@ export class School {
     }
 
     const avgSpeed = moving ? Math.hypot(vx / moving, vy / moving) : 0;
-    // Fast schools naturally stretch along their travel direction; slow schools
-    // relax toward a wider, rounder formation.
     const speedRatio = Math.max(0, Math.min(1, (avgSpeed - 1.2) / 2.2));
     this.aspectRatio += ((1 + speedRatio * 1.15) - this.aspectRatio) * Math.min(1, dt * .06);
+
+    // Density target adapts slowly so local spacing changes do not cause
+    // oscillation or sudden school expansion/contraction.
+    const countFactor = Math.sqrt(Math.max(1, this.fish.length) / 160);
+    const speedSpacing = 1 + speedRatio * .18;
+    this.densityTarget = Math.max(.82, Math.min(1.28, countFactor * speedSpacing));
+    this.localDensity += (this.densityTarget - this.localDensity) * Math.min(1, dt * .08);
 
     for (const fish of this.fish) fish.update(speed, dt);
     for (const fish of this.fish) fish.edge();
@@ -52,9 +59,10 @@ export class School {
 
   getFormation() {
     return {
-      preferredSpacing: this.preferredSpacing,
+      preferredSpacing: this.preferredSpacing * this.localDensity,
       compactness: this.compactness,
-      aspectRatio: this.aspectRatio
+      aspectRatio: this.aspectRatio,
+      density: this.localDensity
     };
   }
 }
