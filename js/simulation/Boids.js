@@ -15,12 +15,10 @@ export const Boids = {
 
       grid.near(f.x, f.y, j => {
         if (j === i) return;
-
         const o = fish[j];
         const dx = f.x - o.x;
         const dy = f.y - o.y;
         const d2 = dx * dx + dy * dy;
-
         if (d2 <= 0 || d2 >= r2) return;
 
         alignX += o.vx;
@@ -52,11 +50,9 @@ export const Boids = {
 
         const avgSpeed = Math.hypot(avgVX, avgVY);
         if (avgSpeed > .12) {
-          const target = Math.atan2(avgVY, avgVX);
-          let delta = target - f.angle;
+          let delta = Math.atan2(avgVY, avgVX) - f.angle;
           while (delta > Math.PI) delta -= Math.PI * 2;
           while (delta < -Math.PI) delta += Math.PI * 2;
-
           const influence = Math.min(.18, n / 80 * .18);
           f.turnWave = f.turnWave * .88 + delta * influence;
           f.turnWave = Math.max(-.16, Math.min(.16, f.turnWave));
@@ -70,19 +66,23 @@ export const Boids = {
         if (d2 > 36 && d2 < leaderRadius2) {
           const d = Math.sqrt(d2);
           const fall = 1 - d / leaderRadius;
-          const follow = .028 * fall * fall;
-          f.accx += (leader.vx - f.vx) * follow;
-          f.accy += (leader.vy - f.vy) * follow;
-
-          // A leader changes the local wave direction without forcing
-          // distant fish into synchronized motion.
           const leadSpeed = Math.hypot(leader.vx, leader.vy);
+
+          // The leader supplies direction intent, not positional attraction.
+          // This prevents the school from collapsing onto the leader.
           if (leadSpeed > .12) {
-            let delta = Math.atan2(leader.vy, leader.vx) - f.angle;
+            const intentX = leader.intentX ?? leader.vx / leadSpeed;
+            const intentY = leader.intentY ?? leader.vy / leadSpeed;
+            const follow = .045 * fall * fall;
+            f.accx += (intentX * leadSpeed - f.vx) * follow;
+
+            f.accy += (intentY * leadSpeed - f.vy) * follow;
+
+            let delta = Math.atan2(intentY, intentX) - f.angle;
             while (delta > Math.PI) delta -= Math.PI * 2;
             while (delta < -Math.PI) delta += Math.PI * 2;
-            f.turnWave += delta * .018 * fall;
-            f.turnWave = Math.max(-.2, Math.min(.2, f.turnWave));
+            f.turnWave += delta * .014 * fall;
+            f.turnWave = Math.max(-.18, Math.min(.18, f.turnWave));
           }
         }
       }
