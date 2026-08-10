@@ -23,6 +23,8 @@ export class Fish {
     this.tail = 0;
     this.tailSpeed = .13 + Math.random() * .1;
     this.angle = a;
+    this.trailX = this.x;
+    this.trailY = this.y;
   }
 
   update(speed = 1, dt = 1) {
@@ -66,6 +68,11 @@ export class Fish {
       const deadZone = .035;
       if (Math.abs(delta) > deadZone) this.angle = target;
     }
+
+    // Very short motion trail: a single faded segment, intentionally subtle.
+    const trailFollow = Math.min(1, .12 * dt + .04);
+    this.trailX += (this.x - this.trailX) * trailFollow;
+    this.trailY += (this.y - this.trailY) * trailFollow;
   }
 
   edge() {
@@ -73,65 +80,63 @@ export class Fish {
     if (this.x > this.width + 20) this.x = -20;
     if (this.y < -20) this.y = this.height + 20;
     if (this.y > this.height + 20) this.y = -20;
+    this.trailX = this.x;
+    this.trailY = this.y;
   }
 
   draw(ctx) {
     const z = .68 + this.depth * .7;
     const s = this.size * z;
-    const a = .2 + this.depth * .68;
+    const a = .18 + this.depth * .7;
     const ang = this.angle;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
 
-    const tx = (px, py) => this.x + px * cs - py * sn;
-    const ty = (px, py) => this.y + px * sn + py * cs;
+    // Subtle cyan motion trail behind the fish.
+    const speed = Math.hypot(this.vx, this.vy);
+    if (speed > .35) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(.16, .035 + speed * .018) * (.55 + this.depth * .45);
+      ctx.strokeStyle = '#62dff5';
+      ctx.lineWidth = Math.max(.45, s * .18);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(this.trailX, this.trailY);
+      ctx.lineTo(this.x - cs * s * 1.25, this.y - sn * s * 1.25);
+      ctx.stroke();
+      ctx.restore();
+    }
 
-    // Clean, recognizable fish silhouette: rounded body + forked tail + fins.
-    const bodyRx = 2.15 * s;
-    const bodyRy = .82 * s;
-    const tailX = -2.05 * s;
-    const tailW = 1.05 * s;
+    const body = [
+      [2.8 * s, 0],
+      [1.25 * s, -.58 * s],
+      [-.75 * s, -.68 * s],
+      [-1.65 * s, 0],
+      [-.75 * s, .68 * s],
+      [1.25 * s, .58 * s]
+    ];
+    const tail = [
+      [-1.25 * s, 0],
+      [-2.35 * s, -1.0 * s],
+      [-1.95 * s, 0],
+      [-2.35 * s, 1.0 * s]
+    ];
 
-    ctx.save();
     ctx.globalAlpha = a;
     ctx.fillStyle = this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
 
-    // Body.
-    ctx.beginPath();
-    ctx.ellipse(this.x + .45 * s * cs, this.y + .45 * s * sn, bodyRx, bodyRy, ang, 0, Math.PI * 2);
-    ctx.fill();
+    const drawShape = points => {
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const X = this.x + points[i][0] * cs - points[i][1] * sn;
+        const Y = this.y + points[i][0] * sn + points[i][1] * cs;
+        i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.fill();
+    };
 
-    // Forked tail.
-    ctx.beginPath();
-    ctx.moveTo(tx(tailX, 0), ty(tailX, 0));
-    ctx.lineTo(tx(tailX - .95 * s, -tailW), ty(tailX - .95 * s, -tailW));
-    ctx.lineTo(tx(tailX - .58 * s, 0), ty(tailX - .58 * s, 0));
-    ctx.lineTo(tx(tailX - .95 * s, tailW), ty(tailX - .95 * s, tailW));
-    ctx.closePath();
-    ctx.fill();
-
-    // Dorsal and lower fins.
-    ctx.beginPath();
-    ctx.moveTo(tx(.05 * s, -.55 * s), ty(.05 * s, -.55 * s));
-    ctx.lineTo(tx(-.65 * s, -1.05 * s), ty(-.65 * s, -1.05 * s));
-    ctx.lineTo(tx(-.75 * s, -.35 * s), ty(-.75 * s, -.35 * s));
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(tx(.05 * s, .55 * s), ty(.05 * s, .55 * s));
-    ctx.lineTo(tx(-.65 * s, 1.05 * s), ty(-.65 * s, 1.05 * s));
-    ctx.lineTo(tx(-.75 * s, .35 * s), ty(-.75 * s, .35 * s));
-    ctx.closePath();
-    ctx.fill();
-
-    // Small eye gives the silhouette a clear head direction without animation.
-    ctx.globalAlpha = Math.min(1, a + .18);
-    ctx.fillStyle = '#d9fbff';
-    ctx.beginPath();
-    ctx.arc(tx(1.72 * s, -.27 * s), ty(1.72 * s, -.27 * s), Math.max(.28, .16 * s), 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
+    drawShape(tail);
+    drawShape(body);
   }
 }
