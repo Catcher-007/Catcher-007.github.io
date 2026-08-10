@@ -5,6 +5,8 @@ export const Boids = {
     const separationRadius2 = separationRadius * separationRadius;
     const leaderRadius = 190;
     const leaderRadius2 = leaderRadius * leaderRadius;
+    const leaderRing1 = 62;
+    const leaderRing2 = 124;
 
     for (let i = 0; i < fish.length; i++) {
       const f = fish[i];
@@ -65,23 +67,30 @@ export const Boids = {
         const d2 = dx * dx + dy * dy;
         if (d2 > 36 && d2 < leaderRadius2) {
           const d = Math.sqrt(d2);
-          const fall = 1 - d / leaderRadius;
           const leadSpeed = Math.hypot(leader.vx, leader.vy);
 
-          // The leader supplies direction intent, not positional attraction.
-          // This prevents the school from collapsing onto the leader.
+          // Leader influence is layered by distance. The inner ring reacts first;
+          // outer rings receive a weaker signal, preventing the school from
+          // collapsing onto the leader while preserving a wave-like turn.
           if (leadSpeed > .12) {
+            let ringWeight;
+            if (d < leaderRing1) ringWeight = .065;
+            else if (d < leaderRing2) ringWeight = .038;
+            else ringWeight = .016;
+
+            const fall = Math.max(0, 1 - d / leaderRadius);
+            const follow = ringWeight * fall * fall;
             const intentX = leader.intentX ?? leader.vx / leadSpeed;
             const intentY = leader.intentY ?? leader.vy / leadSpeed;
-            const follow = .045 * fall * fall;
-            f.accx += (intentX * leadSpeed - f.vx) * follow;
 
+            f.accx += (intentX * leadSpeed - f.vx) * follow;
             f.accy += (intentY * leadSpeed - f.vy) * follow;
 
             let delta = Math.atan2(intentY, intentX) - f.angle;
             while (delta > Math.PI) delta -= Math.PI * 2;
             while (delta < -Math.PI) delta += Math.PI * 2;
-            f.turnWave += delta * .014 * fall;
+            const waveGain = ringWeight * .34 * fall;
+            f.turnWave += delta * waveGain;
             f.turnWave = Math.max(-.18, Math.min(.18, f.turnWave));
           }
         }
