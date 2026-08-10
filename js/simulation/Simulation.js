@@ -90,7 +90,32 @@ export class Simulation {
       const d = Math.sqrt(d2), fall = 1 - d / 150;
       if (fall > 0 && this.mouse.speed > .15) { const inv = 1 / d, swirl = .16 * fall; ax += (this.mouse.speedX * .075 - dy * inv * swirl) * fall; ay += (this.mouse.speedY * .075 + dx * inv * swirl) * fall; }
     }
-    if (this.mouse.inside && this.mouse.speed > 2.4 && d2 < 10000 && d2 > 0) { const d = Math.sqrt(d2), force = (1 - d / 100) * .85 * Math.min(1.5, this.mouse.speed / 4); ax -= dx / d * force; ay -= dy / d * force; f.scare = Math.min(1, (f.scare || 0) + .35); }
+
+    if (this.mouse.inside && this.mouse.speed > 2.4 && d2 < 10000 && d2 > 0) {
+      const d = Math.sqrt(d2);
+      const force = (1 - d / 100) * .85 * Math.min(1.5, this.mouse.speed / 4);
+      const flee = Math.max(0, 1 - d / 100);
+      ax -= dx / d * force;
+      ay -= dy / d * force;
+      f.scare = Math.min(1, f.scare + .35);
+      if (!f.isLeader) f.panic = Math.min(1, f.panic + .42 * flee);
+    }
+
+    if (f.panic > 0) {
+      // Preserve outward momentum for a short period after the cursor passes.
+      // This is intentionally weak: the normal Boids cohesion can take over
+      // again as panic decays, producing Scatter -> Regroup instead of a snap-back.
+      const fleeX = f.x - this.mouse.x;
+      const fleeY = f.y - this.mouse.y;
+      const fd2 = fleeX * fleeX + fleeY * fleeY;
+      if (fd2 > 1 && fd2 < 22500) {
+        const fd = Math.sqrt(fd2);
+        const panicForce = f.panic * .045;
+        ax += fleeX / fd * panicForce;
+        ay += fleeY / fd * panicForce;
+      }
+    }
+
     if (this.mouse.down && d2 > 64) { const inv = 1 / Math.sqrt(d2), force = this.attraction * Math.min(1, 140 * inv); ax += dx * inv * force; ay += dy * inv * force; f.limit = f.max * 1.45; }
     else { if (this.mouse.inside && d2 < 14400 && d2 > 0) { const d = Math.sqrt(d2), force = (1 - d / 120) * .34; ax -= dx / d * force; ay -= dy / d * force; } f.limit = f.max; }
     this.flowGrid.near(f.x, f.y, i => { const q = this.flows[i], qx = f.x - q.x, qy = f.y - q.y, qd2 = qx * qx + qy * qy; if (qd2 < 19600) { const d = Math.sqrt(qd2) || 1, fall = 1 - d / 140; ax += q.vx * q.p * fall * .055; ay += q.vy * q.p * fall * .055; } });
