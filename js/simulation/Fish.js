@@ -25,6 +25,8 @@ export class Fish {
     this.angle = a;
     this.trailX = this.x;
     this.trailY = this.y;
+    this.turnWave = 0;
+    this.wavePhase = Math.random() * Math.PI * 2;
   }
 
   update(speed = 1, dt = 1) {
@@ -82,9 +84,6 @@ export class Fish {
     const minX = margin;
     const maxX = Math.max(minX, this.width - margin);
 
-    // Wrap only after the fish has fully crossed the corresponding edge.
-    // Re-entry gets a small random offset on the perpendicular axis.
-    // Clamp the offset so it can never spawn in a corner/outside the canvas.
     if (this.x < -margin) {
       this.x = this.width + margin;
       this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
@@ -117,8 +116,8 @@ export class Fish {
     const ang = this.angle;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
-
     const speed = Math.hypot(this.vx, this.vy);
+
     if (speed > .35) {
       ctx.save();
       ctx.globalAlpha = Math.min(.16, .035 + speed * .018) * (.55 + this.depth * .45);
@@ -133,18 +132,11 @@ export class Fish {
     }
 
     const body = [
-      [2.8 * s, 0],
-      [1.25 * s, -.58 * s],
-      [-.75 * s, -.68 * s],
-      [-1.65 * s, 0],
-      [-.75 * s, .68 * s],
-      [1.25 * s, .58 * s]
+      [2.8 * s, 0], [1.25 * s, -.58 * s], [-.75 * s, -.68 * s],
+      [-1.65 * s, 0], [-.75 * s, .68 * s], [1.25 * s, .58 * s]
     ];
     const tail = [
-      [-1.25 * s, 0],
-      [-2.35 * s, -1.0 * s],
-      [-1.95 * s, 0],
-      [-2.35 * s, 1.0 * s]
+      [-1.25 * s, 0], [-2.35 * s, -1.0 * s], [-1.95 * s, 0], [-2.35 * s, 1.0 * s]
     ];
 
     ctx.globalAlpha = a;
