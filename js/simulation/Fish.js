@@ -45,8 +45,6 @@ export class Fish {
       this.vy = this.vy / s * lim;
     }
 
-    // Prevent the velocity vector from becoming too small and flipping
-    // direction from tiny numerical/Boids corrections.
     const minSpeed = Math.min(1.05, lim * .42);
     if (s > 0 && s < minSpeed) {
       this.vx = this.vx / s * minSpeed;
@@ -58,11 +56,10 @@ export class Fish {
     this.y += this.vy * depthSpeed * dt;
     this.accx = 0;
     this.accy = 0;
-    this.phase += this.tailSpeed * (.7 + ns * .08) * dt;
-    this.tail = Math.sin(this.phase) * Math.min(.34, ns / 3.2);
 
-    // Smooth the visual heading so small left/right velocity changes do not
-    // make the fish snap its head back and forth while nearly stationary.
+    // Keep the body rigid: no tail/wiggle animation.
+    this.tail = 0;
+
     if (ns > .01) {
       const target = Math.atan2(this.vy, this.vx);
       let delta = target - this.angle;
@@ -85,16 +82,15 @@ export class Fish {
     const z = .68 + this.depth * .7;
     const s = this.size * z;
     const a = .18 + this.depth * .7;
-    const t = this.tail * .7;
     const ang = this.angle;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
     const p = [
       [3.1 * s, 0],
       [-.45 * s, -.7 * s],
-      [-1.55 * s, -(1.25 + t) * s],
+      [-1.55 * s, -1.25 * s],
       [-.85 * s, 0],
-      [-1.55 * s, (1.25 - t) * s],
+      [-1.55 * s, 1.25 * s],
       [-.45 * s, .7 * s]
     ];
 
