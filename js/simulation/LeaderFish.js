@@ -1,10 +1,5 @@
 import { Fish } from './Fish.js';
 
-/**
- * A fish with a small amount of autonomous steering used as a school leader.
- * The leader remains a Fish so it can participate in the existing simulation,
- * while keeping leader-specific behavior outside Boids.
- */
 export class LeaderFish extends Fish {
   constructor(x, y, depth, rng = Math.random) {
     super(x, y, depth);
