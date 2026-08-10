@@ -27,8 +27,6 @@ export const Boids = {
         centerY += o.y;
         n++;
 
-        // Separation is deliberately strong only at close range. This keeps
-        // the school visually open instead of collapsing into one bright blob.
         if (d2 < separationRadius2) {
           const d = Math.sqrt(d2);
           const falloff = 1 - d / separationRadius;
@@ -41,15 +39,29 @@ export const Boids = {
       if (!n) continue;
 
       const invN = 1 / n;
-      f.accx += (alignX * invN - f.vx) * .055;
-      f.accy += (alignY * invN - f.vy) * .055;
+      const avgVX = alignX * invN;
+      const avgVY = alignY * invN;
 
-      // Gentle cohesion: fish should form a school, not a single point mass.
+      f.accx += (avgVX - f.vx) * .055;
+      f.accy += (avgVY - f.vy) * .055;
       f.accx += (centerX * invN - f.x) * .0017;
       f.accy += (centerY * invN - f.y) * .0017;
-
       f.accx += sepX * .22;
       f.accy += sepY * .22;
+
+      // Propagate only a small portion of a local turn. The wave is based on
+      // heading difference, not a synchronized global rotation.
+      const avgSpeed = Math.hypot(avgVX, avgVY);
+      if (avgSpeed > .12) {
+        let target = Math.atan2(avgVY, avgVX);
+        let delta = target - f.angle;
+        while (delta > Math.PI) delta -= Math.PI * 2;
+        while (delta < -Math.PI) delta += Math.PI * 2;
+
+        const influence = Math.min(.18, n / 80 * .18);
+        f.turnWave = f.turnWave * .88 + delta * influence;
+        f.turnWave = Math.max(-.16, Math.min(.16, f.turnWave));
+      }
     }
   }
 };
