@@ -13,6 +13,7 @@ export class Fish {
     this.vx = Math.cos(a) * s;
     this.vy = Math.sin(a) * s;
     this.max = 2 + Math.random() * 2;
+    this.limit = this.max;
     this.depth = Math.random();
     this.size = 1.7 + Math.random() * 2.6;
     this.h = 185 + Math.random() * 50;
@@ -29,7 +30,7 @@ export class Fish {
     this.vy += this.accy * speed * depthSpeed * dt;
 
     const s = Math.hypot(this.vx, this.vy);
-    const lim = this.max * speed * depthSpeed;
+    const lim = this.limit * speed * depthSpeed;
     if (s > lim) {
       this.vx = this.vx / s * lim;
       this.vy = this.vy / s * lim;
