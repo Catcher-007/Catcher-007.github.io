@@ -27,7 +27,7 @@ export class Fish {
 
   update(speed = 1, dt = 1) {
     const depthSpeed = .68 + this.depth * .48;
-    const maxAccel = .22;
+    const maxAccel = .12;
     const acc = Math.hypot(this.accx, this.accy);
     if (acc > maxAccel) {
       const k = maxAccel / acc;
@@ -56,18 +56,19 @@ export class Fish {
     this.y += this.vy * depthSpeed * dt;
     this.accx = 0;
     this.accy = 0;
-
-    // Keep the body rigid: no tail/wiggle animation.
     this.tail = 0;
 
-    if (ns > .01) {
+    // Use a stable velocity direction. Ignore tiny angular changes so the
+    // fish does not visually twitch when Boids forces fluctuate by a small amount.
+    if (ns > .08) {
       const target = Math.atan2(this.vy, this.vx);
       let delta = target - this.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      const maxTurn = .105 * dt;
-      if (Math.abs(delta) > maxTurn) delta = Math.sign(delta) * maxTurn;
-      this.angle += delta;
+      const deadZone = .035;
+      if (Math.abs(delta) > deadZone) {
+        this.angle = target;
+      }
     }
   }
 
