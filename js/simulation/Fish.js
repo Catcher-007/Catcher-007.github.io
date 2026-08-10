@@ -30,6 +30,8 @@ export class Fish {
     this.isLeader = false;
     this.leaderPhase = Math.random() * Math.PI * 2;
     this.leaderTurn = 0;
+    this.scare = 0;
+    this.panic = 0;
   }
 
   update(speed = 1, dt = 1) {
@@ -45,8 +47,14 @@ export class Fish {
     this.vx += this.accx * speed * depthSpeed * dt;
     this.vy += this.accy * speed * depthSpeed * dt;
 
-    const s = Math.hypot(this.vx, this.vy);
-    const lim = this.limit * speed * depthSpeed;
+    this.panic *= Math.pow(.965, dt);
+    if (this.panic < .01) this.panic = 0;
+    this.scare *= Math.pow(.92, dt);
+    if (this.scare < .01) this.scare = 0;
+
+    const panicBoost = 1 + this.panic * .38;
+    const lim = this.limit * speed * depthSpeed * panicBoost;
+    let s = Math.hypot(this.vx, this.vy);
     if (s > lim) {
       this.vx = this.vx / s * lim;
       this.vy = this.vy / s * lim;
@@ -131,18 +139,11 @@ export class Fish {
       ctx.restore();
     }
 
-    const body = [
-      [2.8 * s, 0], [1.25 * s, -.58 * s], [-.75 * s, -.68 * s],
-      [-1.65 * s, 0], [-.75 * s, .68 * s], [1.25 * s, .58 * s]
-    ];
-    const tail = [
-      [-1.25 * s, 0], [-2.35 * s, -1.0 * s], [-1.95 * s, 0], [-2.35 * s, 1.0 * s]
-    ];
+    const body = [[2.8 * s, 0], [1.25 * s, -.58 * s], [-.75 * s, -.68 * s], [-1.65 * s, 0], [-.75 * s, .68 * s], [1.25 * s, .58 * s]];
+    const tail = [[-1.25 * s, 0], [-2.35 * s, -1.0 * s], [-1.95 * s, 0], [-2.35 * s, 1.0 * s]];
 
     ctx.globalAlpha = a;
-    ctx.fillStyle = this.isLeader
-      ? '#b8f7ff'
-      : this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
+    ctx.fillStyle = this.isLeader ? '#b8f7ff' : this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
 
     const drawShape = points => {
       ctx.beginPath();
