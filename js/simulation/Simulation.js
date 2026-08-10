@@ -1,4 +1,6 @@
 import { Fish } from './Fish.js';
+import { LeaderFish } from './LeaderFish.js';
+import { School } from './School.js';
 import { Boids } from './Boids.js';
 import { SpatialGrid } from './SpatialGrid.js';
 import { Bubbles } from './Bubbles.js';
@@ -15,13 +17,28 @@ export class Simulation {
     this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
+    this.school = new School();
+    this.leader = null;
     this.reset();
   }
 
-  resize(width, height) { this.width = width; this.height = height; for (const f of this.fish) { f.width = width; f.height = height; } }
+  resize(width, height) {
+    this.width = width;
+    this.height = height;
+    for (const f of this.fish) { f.width = width; f.height = height; }
+  }
 
   reset() {
-    this.fish = Array.from({ length: this.count }, () => new Fish(this.width, this.height));
+    const leader = new LeaderFish(this.width, this.height);
+    leader.size *= 1.12;
+    leader.max *= 1.04;
+    leader.limit = leader.max;
+
+    const fish = Array.from({ length: Math.max(0, this.count - 1) }, () => new Fish(this.width, this.height));
+    this.school = new School(fish, leader);
+    this.school.setLeader(leader);
+    this.fish = this.school.fish;
+    this.leader = leader;
     this.bubbles.items.length = 0;
   }
 
@@ -43,11 +60,13 @@ export class Simulation {
   }
 
   step(dt = 1) {
-    this.grid.build(this.fish); this.flowGrid.build(this.flows);
-    Boids.update(this.fish, this.grid, 78);
-    for (const f of this.fish) { this.#interact(f); f.update(this.speed, dt); f.edge(); }
+    this.grid.build(this.fish);
+    this.flowGrid.build(this.flows);
+    Boids.update(this.fish, this.grid, 78, this.leader);
 
-    // Sparse bubbles keep the aquarium alive without turning the canvas into a particle field.
+    for (const f of this.fish) this.#interact(f);
+    this.school.update(dt, this.speed, this.width, this.height);
+
     if (Math.random() < .018 * (this.mobile ? .65 : 1)) {
       const source = this.fish[(Math.random() * this.fish.length) | 0];
       if (source) this.bubbles.spawn(source.x, source.y, .75 + this.speed * .5);

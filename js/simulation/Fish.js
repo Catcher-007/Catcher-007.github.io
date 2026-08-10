@@ -27,11 +27,14 @@ export class Fish {
     this.trailY = this.y;
     this.turnWave = 0;
     this.wavePhase = Math.random() * Math.PI * 2;
+    this.isLeader = false;
+    this.leaderPhase = Math.random() * Math.PI * 2;
+    this.leaderTurn = 0;
   }
 
   update(speed = 1, dt = 1) {
     const depthSpeed = .68 + this.depth * .48;
-    const maxAccel = .12;
+    const maxAccel = this.isLeader ? .105 : .12;
     const acc = Math.hypot(this.accx, this.accy);
     if (acc > maxAccel) {
       const k = maxAccel / acc;
@@ -71,9 +74,7 @@ export class Fish {
       if (Math.abs(delta) > deadZone) this.angle = target;
     }
 
-    // Let the propagated turn fade out smoothly after the local wave passes.
     this.turnWave *= Math.pow(.82, dt);
-
     const trailFollow = Math.min(1, .12 * dt + .04);
     this.trailX += (this.x - this.trailX) * trailFollow;
     this.trailY += (this.y - this.trailY) * trailFollow;
@@ -82,31 +83,27 @@ export class Fish {
   edge() {
     const margin = 20;
     const jitter = 24;
-    const minY = margin;
+    const minY = Math.min(margin, Math.max(0, this.height * .5));
     const maxY = Math.max(minY, this.height - margin);
-    const minX = margin;
+    const minX = Math.min(margin, Math.max(0, this.width * .5));
     const maxX = Math.max(minX, this.width - margin);
 
-    if (this.x < -margin) {
-      this.x = this.width + margin;
+    const outLeft = this.x < -margin;
+    const outRight = this.x > this.width + margin;
+    const outTop = this.y < -margin;
+    const outBottom = this.y > this.height + margin;
+
+    if (outLeft || outRight) {
+      this.x = outLeft ? this.width + margin : -margin;
       this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
-    } else if (this.x > this.width + margin) {
-      this.x = -margin;
-      this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
     }
 
-    if (this.y < -margin) {
-      this.y = this.height + margin;
+    if (outTop || outBottom) {
+      this.y = outTop ? this.height + margin : -margin;
       this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
-      this.trailX = this.x;
-      this.trailY = this.y;
-    } else if (this.y > this.height + margin) {
-      this.y = -margin;
-      this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
+    }
+
+    if (outLeft || outRight || outTop || outBottom) {
       this.trailX = this.x;
       this.trailY = this.y;
     }
@@ -114,7 +111,7 @@ export class Fish {
 
   draw(ctx) {
     const z = .68 + this.depth * .7;
-    const s = this.size * z;
+    const s = this.size * z * (this.isLeader ? 1.55 : 1);
     const a = .18 + this.depth * .7;
     const ang = this.angle;
     const cs = Math.cos(ang);
@@ -124,7 +121,7 @@ export class Fish {
     if (speed > .35) {
       ctx.save();
       ctx.globalAlpha = Math.min(.16, .035 + speed * .018) * (.55 + this.depth * .45);
-      ctx.strokeStyle = '#62dff5';
+      ctx.strokeStyle = this.isLeader ? '#b8f7ff' : '#62dff5';
       ctx.lineWidth = Math.max(.45, s * .18);
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -143,7 +140,9 @@ export class Fish {
     ];
 
     ctx.globalAlpha = a;
-    ctx.fillStyle = this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
+    ctx.fillStyle = this.isLeader
+      ? '#b8f7ff'
+      : this.depth > .72 ? '#8eefff' : this.depth > .38 ? '#62dff5' : '#48b9d6';
 
     const drawShape = points => {
       ctx.beginPath();
