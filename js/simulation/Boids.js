@@ -1,7 +1,7 @@
 export const Boids = {
   update(fish, grid, neighborRadius = 78, leader = null) {
     const r2 = neighborRadius * neighborRadius;
-    const separationRadius = 32;
+    const separationRadius = 34;
     const separationRadius2 = separationRadius * separationRadius;
     const leaderRadius = 190;
     const leaderRadius2 = leaderRadius * leaderRadius;
@@ -32,7 +32,7 @@ export const Boids = {
         if (d2 < separationRadius2) {
           const d = Math.sqrt(d2);
           const falloff = 1 - d / separationRadius;
-          const w = falloff * falloff / d;
+          const w = falloff * falloff / Math.max(d, 0.5);
           sepX += dx * w;
           sepY += dy * w;
         }
@@ -43,12 +43,12 @@ export const Boids = {
         const avgVX = alignX * invN;
         const avgVY = alignY * invN;
 
-        f.accx += (avgVX - f.vx) * .055;
-        f.accy += (avgVY - f.vy) * .055;
-        f.accx += (centerX * invN - f.x) * .0017;
-        f.accy += (centerY * invN - f.y) * .0017;
-        f.accx += sepX * .22;
-        f.accy += sepY * .22;
+        f.accx += (avgVX - f.vx) * .052;
+        f.accy += (avgVY - f.vy) * .052;
+        f.accx += (centerX * invN - f.x) * .00145;
+        f.accy += (centerY * invN - f.y) * .00145;
+        f.accx += sepX * .25;
+        f.accy += sepY * .25;
 
         const avgSpeed = Math.hypot(avgVX, avgVY);
         if (avgSpeed > .12) {
@@ -69,14 +69,11 @@ export const Boids = {
           const d = Math.sqrt(d2);
           const leadSpeed = Math.hypot(leader.vx, leader.vy);
 
-          // Leader influence is layered by distance. The inner ring reacts first;
-          // outer rings receive a weaker signal, preventing the school from
-          // collapsing onto the leader while preserving a wave-like turn.
           if (leadSpeed > .12) {
             let ringWeight;
-            if (d < leaderRing1) ringWeight = .065;
-            else if (d < leaderRing2) ringWeight = .038;
-            else ringWeight = .016;
+            if (d < leaderRing1) ringWeight = .060;
+            else if (d < leaderRing2) ringWeight = .035;
+            else ringWeight = .014;
 
             const fall = Math.max(0, 1 - d / leaderRadius);
             const follow = ringWeight * fall * fall;
@@ -89,7 +86,7 @@ export const Boids = {
             let delta = Math.atan2(intentY, intentX) - f.angle;
             while (delta > Math.PI) delta -= Math.PI * 2;
             while (delta < -Math.PI) delta += Math.PI * 2;
-            const waveGain = ringWeight * .34 * fall;
+            const waveGain = ringWeight * .30 * fall;
             f.turnWave += delta * waveGain;
             f.turnWave = Math.max(-.18, Math.min(.18, f.turnWave));
           }
