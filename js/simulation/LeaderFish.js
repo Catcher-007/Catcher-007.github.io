@@ -34,10 +34,13 @@ export class LeaderFish extends Fish {
       this.vy += (nextVy - this.vy) * steer;
     }
 
+    // Advance the actual fish first, then publish the current heading so the
+    // school responds to the leader's latest direction rather than one frame old.
+    super.update(speed, dt);
+
     const heading = Math.atan2(this.vy, this.vx);
     this.intentX = Math.cos(heading);
     this.intentY = Math.sin(heading);
-    super.update(speed, dt);
   }
 
   #chooseState() {
