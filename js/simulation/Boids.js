@@ -1,12 +1,14 @@
 export const Boids = {
-  update(fish, grid, neighborRadius = 60) {
+  update(fish, grid, neighborRadius = 78) {
     const r2 = neighborRadius * neighborRadius;
+    const separationRadius = 32;
+    const separationRadius2 = separationRadius * separationRadius;
 
     for (let i = 0; i < fish.length; i++) {
       const f = fish[i];
-      let ax = 0, ay = 0;
-      let cx = 0, cy = 0;
-      let sx = 0, sy = 0;
+      let alignX = 0, alignY = 0;
+      let centerX = 0, centerY = 0;
+      let sepX = 0, sepY = 0;
       let n = 0;
 
       grid.near(f.x, f.y, j => {
@@ -17,35 +19,37 @@ export const Boids = {
         const dy = f.y - o.y;
         const d2 = dx * dx + dy * dy;
 
-        if (d2 > 0 && d2 < r2) {
-          ax += o.vx;
-          ay += o.vy;
-          cx += o.x;
-          cy += o.y;
+        if (d2 <= 0 || d2 >= r2) return;
 
-          if (d2 < 625) {
-            const inv = 1 / Math.sqrt(d2);
-            sx += dx * inv;
-            sy += dy * inv;
-          }
+        alignX += o.vx;
+        alignY += o.vy;
+        centerX += o.x;
+        centerY += o.y;
+        n++;
 
-          n++;
+        // Separation is deliberately strong only at close range. This keeps
+        // the school visually open instead of collapsing into one bright blob.
+        if (d2 < separationRadius2) {
+          const d = Math.sqrt(d2);
+          const falloff = 1 - d / separationRadius;
+          const w = falloff * falloff / d;
+          sepX += dx * w;
+          sepY += dy * w;
         }
       });
 
       if (!n) continue;
 
-      // Average separation as well as alignment/cohesion. This avoids a
-      // close pair repeatedly pushing each other past the desired heading.
-      sx /= n;
-      sy /= n;
+      const invN = 1 / n;
+      f.accx += (alignX * invN - f.vx) * .055;
+      f.accy += (alignY * invN - f.vy) * .055;
 
-      f.accx += (ax / n - f.vx) * .065
-        + (cx / n - f.x) * .0035
-        + sx * .055;
-      f.accy += (ay / n - f.vy) * .065
-        + (cy / n - f.y) * .0035
-        + sy * .055;
+      // Gentle cohesion: fish should form a school, not a single point mass.
+      f.accx += (centerX * invN - f.x) * .0017;
+      f.accy += (centerY * invN - f.y) * .0017;
+
+      f.accx += sepX * .22;
+      f.accy += sepY * .22;
     }
   }
 };
