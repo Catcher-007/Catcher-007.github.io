@@ -20,8 +20,6 @@ export class Fish {
     this.accx = 0;
     this.accy = 0;
     this.phase = Math.random() * Math.PI * 2;
-    this.tail = 0;
-    this.tailSpeed = .13 + Math.random() * .1;
     this.angle = a;
     this.trailX = this.x;
     this.trailY = this.y;
@@ -29,7 +27,6 @@ export class Fish {
     this.wavePhase = Math.random() * Math.PI * 2;
     this.isLeader = false;
     this.leaderPhase = Math.random() * Math.PI * 2;
-    this.leaderTurn = 0;
     this.scare = 0;
     this.panic = 0;
   }
@@ -71,7 +68,6 @@ export class Fish {
     this.y += this.vy * depthSpeed * dt;
     this.accx = 0;
     this.accy = 0;
-    this.tail = 0;
 
     if (ns > .08) {
       const target = Math.atan2(this.vy, this.vx) + this.turnWave * .32;
@@ -124,20 +120,6 @@ export class Fish {
     const ang = this.angle;
     const cs = Math.cos(ang);
     const sn = Math.sin(ang);
-    const speed = Math.hypot(this.vx, this.vy);
-
-    if (speed > .35) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(.16, .035 + speed * .018) * (.55 + this.depth * .45);
-      ctx.strokeStyle = this.isLeader ? '#b8f7ff' : '#62dff5';
-      ctx.lineWidth = Math.max(.45, s * .18);
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(this.trailX, this.trailY);
-      ctx.lineTo(this.x - cs * s * 1.25, this.y - sn * s * 1.25);
-      ctx.stroke();
-      ctx.restore();
-    }
 
     const body = [[2.8 * s, 0], [1.25 * s, -.58 * s], [-.75 * s, -.68 * s], [-1.65 * s, 0], [-.75 * s, .68 * s], [1.25 * s, .58 * s]];
     const tail = [[-1.25 * s, 0], [-2.35 * s, -1.0 * s], [-1.95 * s, 0], [-2.35 * s, 1.0 * s]];

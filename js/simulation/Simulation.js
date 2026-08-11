@@ -4,6 +4,7 @@ import { School } from './School.js';
 import { Boids } from './Boids.js';
 import { SpatialGrid } from './SpatialGrid.js';
 import { Bubbles } from './Bubbles.js';
+import { BackgroundBubbles } from './BackgroundBubbles.js';
 
 export class Simulation {
   constructor(width, height, {
@@ -16,6 +17,7 @@ export class Simulation {
     this.grid = new SpatialGrid(cell); this.flowGrid = new SpatialGrid(flowCell);
     this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
+    this.background = new BackgroundBubbles(width, height, mobile ? 22 : 42);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
     this.school = new School([], null, { preferredSpacing: 30, compactness: 1 });
     this.leader = null;
@@ -25,6 +27,7 @@ export class Simulation {
   resize(width, height) {
     this.width = width;
     this.height = height;
+    this.background.resize(width, height);
     for (const f of this.fish) { f.width = width; f.height = height; }
   }
 
@@ -79,6 +82,7 @@ export class Simulation {
     for (let i = this.flows.length - 1; i >= 0; i--) { this.flows[i].life -= flowDecay * frameUnits; if (this.flows[i].life <= 0) this.flows.splice(i, 1); }
     for (let i = this.ripples.length - 1; i >= 0; i--) { const r = this.ripples[i]; r.r += rippleGrowth * frameUnits; r.life -= rippleDecay * frameUnits; if (r.life <= 0) this.ripples.splice(i, 1); }
     this.bubbles.update(frameUnits);
+    this.background.update(frameUnits);
   }
 
   drawBubbles(ctx) { this.bubbles.draw(ctx); }
