@@ -19,8 +19,6 @@ export class Simulation {
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.background = new BackgroundBubbles(width, height, mobile ? 22 : 42);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
-    this.school = new School([], null, { preferredSpacing: 30, compactness: 1 });
-    this.leader = null;
     this.reset();
   }
 
@@ -38,7 +36,7 @@ export class Simulation {
     leader.limit = leader.max;
 
     const fish = Array.from({ length: Math.max(0, this.count - 1) }, () => new Fish(this.width, this.height));
-    this.school = new School(fish, leader, { preferredSpacing: 30, compactness: 1 });
+    this.school = new School(fish, leader, { preferredSpacing: 30 });
     this.school.setLeader(leader);
     this.fish = this.school.fish;
     this.leader = leader;
@@ -85,8 +83,6 @@ export class Simulation {
     this.background.update(frameUnits);
   }
 
-  drawBubbles(ctx) { this.bubbles.draw(ctx); }
-
   #interact(f) {
     let ax = f.accx, ay = f.accy;
     const dx = this.mouse.x - f.x, dy = this.mouse.y - f.y, d2 = dx * dx + dy * dy;
@@ -101,7 +97,6 @@ export class Simulation {
       const flee = Math.max(0, 1 - d / 100);
       ax -= dx / d * force;
       ay -= dy / d * force;
-      f.scare = Math.min(1, f.scare + .35);
       if (!f.isLeader) f.panic = Math.min(1, f.panic + .42 * flee);
     }
 

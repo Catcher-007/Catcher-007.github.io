@@ -16,18 +16,13 @@ export class Fish {
     this.limit = this.max;
     this.depth = Math.random();
     this.size = 1.7 + Math.random() * 2.6;
-    this.h = 185 + Math.random() * 50;
     this.accx = 0;
     this.accy = 0;
-    this.phase = Math.random() * Math.PI * 2;
     this.angle = a;
     this.trailX = this.x;
     this.trailY = this.y;
     this.turnWave = 0;
-    this.wavePhase = Math.random() * Math.PI * 2;
     this.isLeader = false;
-    this.leaderPhase = Math.random() * Math.PI * 2;
-    this.scare = 0;
     this.panic = 0;
   }
 
@@ -46,8 +41,6 @@ export class Fish {
 
     this.panic *= Math.pow(.965, dt);
     if (this.panic < .01) this.panic = 0;
-    this.scare *= Math.pow(.92, dt);
-    if (this.scare < .01) this.scare = 0;
 
     const panicBoost = 1 + this.panic * .38;
     const lim = this.limit * speed * depthSpeed * panicBoost;

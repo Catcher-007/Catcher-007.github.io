@@ -1,12 +1,10 @@
 export class School {
   constructor(fish = [], leader = null, {
-    preferredSpacing = 30,
-    compactness = 1
+    preferredSpacing = 30
   } = {}) {
     this.fish = fish;
     this.leader = leader;
     this.preferredSpacing = preferredSpacing;
-    this.compactness = compactness;
     this.aspectRatio = 1;
     this.localDensity = 1;
     this.densityTarget = 1;
@@ -18,11 +16,6 @@ export class School {
       leader.isLeader = true;
       if (!this.fish.includes(leader)) this.fish.push(leader);
     }
-  }
-
-  add(fish) {
-    if (!this.fish.includes(fish)) this.fish.push(fish);
-    return fish;
   }
 
   update(dt, speed, width, height) {
@@ -53,14 +46,9 @@ export class School {
     for (const fish of this.fish) fish.edge();
   }
 
-  getLeader() {
-    return this.leader;
-  }
-
   getFormation() {
     return {
       preferredSpacing: this.preferredSpacing * this.localDensity,
-      compactness: this.compactness,
       aspectRatio: this.aspectRatio,
       density: this.localDensity
     };
