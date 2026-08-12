@@ -24,6 +24,7 @@ export class Fish {
     this.turnWave = 0;
     this.isLeader = false;
     this.panic = 0;
+    this.school = null; // 所属鱼群引用：Boids 据此区分"同群聚合 / 跨群分离"，合并分裂时改指向
   }
 
   update(speed = 1, dt = 1) {

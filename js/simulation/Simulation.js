@@ -8,14 +8,14 @@ import { BackgroundBubbles } from './BackgroundBubbles.js';
 
 export class Simulation {
   constructor(width, height, {
-    count = 160, speed = .9, attraction = .65, cell = 64, flowCell = 128,
+    count = 160, speed = .9, attraction = .65, cell = 96, flowCell = 160,
     maxFlow = 14, maxRipple = 6, mobile = false
   } = {}) {
     this.width = width; this.height = height; this.count = count;
     this.speed = speed; this.attraction = attraction; this.mobile = mobile;
     this.maxFlow = maxFlow; this.maxRipple = maxRipple;
     this.grid = new SpatialGrid(cell); this.flowGrid = new SpatialGrid(flowCell);
-    this.fish = []; this.flows = []; this.ripples = [];
+    this.schools = []; this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.background = new BackgroundBubbles(width, height, mobile ? 22 : 42);
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
@@ -30,17 +30,39 @@ export class Simulation {
   }
 
   reset() {
-    const leader = new LeaderFish(this.width, this.height);
-    leader.size *= 1.12;
-    leader.max *= 1.04;
-    leader.limit = leader.max;
-
-    const fish = Array.from({ length: Math.max(0, this.count - 1) }, () => new Fish(this.width, this.height));
-    this.school = new School(fish, leader, { preferredSpacing: 30 });
-    this.school.setLeader(leader);
-    this.fish = this.school.fish;
-    this.leader = leader;
+    // 按设备上限随机 1..max 个鱼群，平分鱼数；每群由一条 leader 带队
+    const maxGroups = Math.min(this.mobile ? 3 : 5, Math.max(1, Math.floor(this.count / 6)));
+    const groups = 1 + Math.floor(Math.random() * maxGroups);
+    const sizes = this.#distribute(this.count, groups);
+    this.schools = [];
+    this.fish = [];
+    for (const size of sizes) {
+      const leader = new LeaderFish(this.width, this.height);
+      leader.size *= 1.12;
+      leader.max *= 1.04;
+      leader.limit = leader.max;
+      const fish = Array.from({ length: Math.max(0, size - 1) }, () => new Fish(this.width, this.height));
+      const school = new School(fish, leader, { preferredSpacing: 30 });
+      school.setLeader(leader);
+      for (const f of school.fish) f.school = school;
+      this.schools.push(school);
+      this.fish.push(...school.fish);
+    }
     this.bubbles.items.length = 0;
+  }
+
+  #distribute(total, groups) {
+    const min = 6;
+    const sizes = [];
+    let remaining = total;
+    for (let i = 0; i < groups; i++) {
+      const left = groups - i - 1;
+      const max = Math.max(min, remaining - min * left);
+      const size = i === groups - 1 ? remaining : min + Math.floor(Math.random() * (max - min + 1));
+      sizes.push(size);
+      remaining -= size;
+    }
+    return sizes;
   }
 
   setParams({ count, speed, attraction } = {}) {
@@ -61,17 +83,96 @@ export class Simulation {
   }
 
   step(dt = 1) {
+    // 1) 重建空间网格 → 2) Boids 计算群聚/对齐/分离 + 跟随 leader → 3) 鼠标/流场/波纹交互 → 4) 合并/分裂 → 5) 随机气泡
     this.grid.build(this.fish);
     this.flowGrid.build(this.flows);
-    Boids.update(this.fish, this.grid, 78, this.leader, this.school.getFormation());
+    Boids.update(this.fish, this.grid, 78);
 
     for (const f of this.fish) this.#interact(f);
-    this.school.update(dt, this.speed, this.width, this.height);
+    for (const sc of this.schools) sc.update(dt, this.speed, this.width, this.height);
+
+    // 每帧先尝试合并再尝试分裂，两个独立随机过程驱动群数动态平衡
+    this.#maybeMerge();
+    this.#maybeSplit();
 
     if (Math.random() < .018 * (this.mobile ? .65 : 1)) {
       const source = this.fish[(Math.random() * this.fish.length) | 0];
       if (source) this.bubbles.spawn(source.x, source.y, .75 + this.speed * .5);
     }
+  }
+
+  #maybeMerge() {
+    // 跨群成员接触（55px）有 3% 概率合并；同帧去重 + 冷却期防止抖动
+    if (this.schools.length < 2) return;
+    const dist2 = 55 * 55;
+    const merged = new Set();
+    for (let i = 0; i < this.fish.length; i++) {
+      const a = this.fish[i];
+      this.grid.near(a.x, a.y, j => {
+        if (j <= i) return;
+        const b = this.fish[j];
+        if (a.school === b.school) return;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        if (dx * dx + dy * dy < dist2) {
+          if (a.school.mergeCooldown > 0 || b.school.mergeCooldown > 0) return;
+          const key = this.schools.indexOf(a.school) + '|' + this.schools.indexOf(b.school);
+          const rkey = this.schools.indexOf(b.school) + '|' + this.schools.indexOf(a.school);
+          if (merged.has(key) || merged.has(rkey) || Math.random() >= .03) return;
+          merged.add(key);
+          this.#merge(a.school, b.school);
+        }
+      });
+    }
+  }
+
+  #merge(a, b) {
+    // 被并群的 leader 降级为普通鱼（后续走 Fish 行为），所有鱼改归 a 群，设置冷却期
+    b.leader.isLeader = false;
+    for (const f of b.fish) {
+      f.school = a;
+      a.fish.push(f);
+    }
+    a.mergeCooldown = 600;
+    this.schools = this.schools.filter(s => s !== b);
+  }
+
+  #maybeSplit() {
+    // 群数达上限则不再分裂；大群（>16）每帧 0.15% 概率分裂（期望 667 帧 ≈ 11 秒触发一次）
+    if (this.schools.length >= (this.mobile ? 3 : 5)) return;
+    for (const sc of this.schools) {
+      if (sc.fish.length > 16 && Math.random() < .0015) {
+        this.#split(sc);
+        return;
+      }
+    }
+  }
+
+  #split(sc) {
+    const followers = sc.fish.filter(f => f !== sc.leader);
+    if (followers.length < 5) return;
+    const k = Math.max(3, Math.floor(followers.length * (.3 + Math.random() * .3)));
+    if (k >= followers.length) return;
+    const pool = followers.slice();
+    const chosen = [];
+    for (let i = 0; i < k; i++) chosen.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
+
+    const template = chosen[0];   // 选一条普通鱼做模板
+    chosen.splice(0, 1);
+    const leader = new LeaderFish(this.width, this.height);
+    leader.x = template.x; leader.y = template.y;
+    leader.vx = template.vx; leader.vy = template.vy;
+    leader.angle = template.angle;
+    leader.size = template.size; leader.depth = template.depth;
+    leader.max = template.max; leader.limit = template.max;
+
+    sc.fish = sc.fish.filter(f => f !== template && !chosen.includes(f));
+    this.fish = this.fish.filter(f => f !== template);  // 模板被新 leader 顶替，维持总数守恒
+    this.fish.push(leader);        // 新 leader 进入主鱼表（网格/渲染/交互才能覆盖它）
+    const school = new School(chosen, leader, { preferredSpacing: 30 });
+    school.setLeader(leader);
+    school.mergeCooldown = 300 + Math.random() * 400;  // 新群 5-12 秒独立期，先游离再可合并
+    for (const f of school.fish) f.school = school;
+    this.schools.push(school);
   }
 
   updateEffects(frameUnits = 1) {

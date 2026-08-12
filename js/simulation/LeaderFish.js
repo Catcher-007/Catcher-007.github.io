@@ -15,6 +15,9 @@ export class LeaderFish extends Fish {
   }
 
   update(speed = 1, dt = 1) {
+    // 合并后 leader 降级（isLeader=false），走普通鱼的 Boids 行为，不再自主巡航
+    if (!this.isLeader) { super.update(speed, dt); return; }
+
     this.stateTimer -= dt;
     if (this.stateTimer <= 0) this.#chooseState();
 
@@ -36,6 +39,7 @@ export class LeaderFish extends Fish {
 
     // Advance the actual fish first, then publish the current heading so the
     // school responds to the leader's latest direction rather than one frame old.
+    // 先推进自己位置，再发布当前朝向（intent）：群体响应的是 leader 最新方向，而非上一帧的方向
     super.update(speed, dt);
 
     const heading = Math.atan2(this.vy, this.vx);

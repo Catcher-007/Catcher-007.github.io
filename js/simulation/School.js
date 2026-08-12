@@ -8,6 +8,7 @@ export class School {
     this.aspectRatio = 1;
     this.localDensity = 1;
     this.densityTarget = 1;
+    this.mergeCooldown = 0;
   }
 
   setLeader(leader) {
@@ -42,15 +43,10 @@ export class School {
     this.densityTarget = Math.max(.82, Math.min(1.28, countFactor * speedSpacing));
     this.localDensity += (this.densityTarget - this.localDensity) * Math.min(1, dt * .08);
 
+    // 合并/分裂冷却递减：冷却中的群不参与合并，避免"分裂即合并"的抖动
+    if (this.mergeCooldown > 0) this.mergeCooldown -= dt;
+
     for (const fish of this.fish) fish.update(speed, dt);
     for (const fish of this.fish) fish.edge();
-  }
-
-  getFormation() {
-    return {
-      preferredSpacing: this.preferredSpacing * this.localDensity,
-      aspectRatio: this.aspectRatio,
-      density: this.localDensity
-    };
   }
 }

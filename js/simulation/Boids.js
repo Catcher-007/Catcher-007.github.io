@@ -1,18 +1,20 @@
 export const Boids = {
-  update(fish, grid, neighborRadius = 78, leader = null, formation = null) {
+  update(fish, grid, neighborRadius = 78) {
     const r2 = neighborRadius * neighborRadius;
-    const density = formation?.density ?? 1;
-    const spacing = formation?.preferredSpacing ?? 30;
-    const separationRadius = Math.max(28, spacing + 4);
-    const separationRadius2 = separationRadius * separationRadius;
     const leaderRadius = 190;
     const leaderRadius2 = leaderRadius * leaderRadius;
     const leaderRing1 = 62;
     const leaderRing2 = 124;
-    const aspect = formation?.aspectRatio ?? 1;
 
     for (let i = 0; i < fish.length; i++) {
       const f = fish[i];
+      const sc = f.school;
+      const density = sc ? sc.localDensity : 1;
+      const spacing = sc ? sc.preferredSpacing : 30;
+      const separationRadius = Math.max(28, spacing + 4);
+      const separationRadius2 = separationRadius * separationRadius;
+      const aspect = sc ? sc.aspectRatio : 1;
+
       let alignX = 0, alignY = 0;
       let centerX = 0, centerY = 0;
       let sepX = 0, sepY = 0;
@@ -26,12 +28,16 @@ export const Boids = {
         const d2 = dx * dx + dy * dy;
         if (d2 <= 0 || d2 >= r2) return;
 
-        alignX += o.vx;
-        alignY += o.vy;
-        centerX += o.x;
-        centerY += o.y;
-        n++;
+        // 仅同群（school 相同）贡献对齐与聚合，保持鱼群独立轮廓
+        if (o.school === sc) {
+          alignX += o.vx;
+          alignY += o.vy;
+          centerX += o.x;
+          centerY += o.y;
+          n++;
+        }
 
+        // 分离避让对同群/跨群都生效：距离过近时互相推开，防止群叠在一起
         if (d2 < separationRadius2) {
           const d = Math.sqrt(Math.max(d2, .5));
           const falloff = 1 - d / separationRadius;
@@ -83,6 +89,9 @@ export const Boids = {
         }
       }
 
+      // 跟随本群 leader：按距离分 3 层权重，leader 的当前意图（intent）驱动游向，
+      // 而不是直接追 leader 位置——这样群体会围绕 leader 形成队形而非挤成一团
+      const leader = sc ? sc.leader : null;
       if (leader && f !== leader) {
         const dx = leader.x - f.x;
         const dy = leader.y - f.y;
