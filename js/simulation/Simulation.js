@@ -18,6 +18,7 @@ export class Simulation {
     this.schools = []; this.fish = []; this.flows = []; this.ripples = [];
     this.bubbles = new Bubbles(mobile ? 10 : 18);
     this.background = new BackgroundBubbles(width, height, mobile ? 22 : 42);
+    this.onMerge = null; // 合并事件钩子，main 层据此播放音效
     this.mouse = { x: -9999, y: -9999, down: false, inside: false, speed: 0, speedX: 0, speedY: 0 };
     this.reset();
   }
@@ -134,6 +135,7 @@ export class Simulation {
     }
     a.mergeCooldown = 600;
     this.schools = this.schools.filter(s => s !== b);
+    this.onMerge && this.onMerge(a);
   }
 
   #maybeSplit() {
