@@ -67,9 +67,60 @@ export class Simulation {
   }
 
   setParams({ count, speed, attraction } = {}) {
-    if (count !== undefined && count !== this.count) { this.count = count; this.reset(); }
+    // 数量变化采用增量增删：拖动滑块时鱼群平滑伸缩，而不是整群销毁重建
+    if (count !== undefined && count !== this.count) {
+      count > this.count ? this.#addFish(count - this.count) : this.#removeFish(this.count - count);
+      this.count = count;
+    }
     if (speed !== undefined) this.speed = speed;
     if (attraction !== undefined) this.attraction = attraction;
+  }
+
+  #addFish(n) {
+    for (let i = 0; i < n; i++) {
+      if (!this.schools.length) { this.reset(); return; }
+      const sc = this.schools[(Math.random() * this.schools.length) | 0];
+      const anchor = sc.fish[(Math.random() * sc.fish.length) | 0];
+      const f = new Fish(this.width, this.height);
+      // 在锚点鱼附近出生，避免新鱼凭空出现在远处造成突兀
+      f.x = anchor.x + (Math.random() - .5) * 80;
+      f.y = anchor.y + (Math.random() - .5) * 80;
+      f.school = sc;
+      sc.fish.push(f);
+      this.fish.push(f);
+    }
+  }
+
+  #removeFish(n) {
+    const minSchool = 6; // 与 #distribute 的单群下限一致，保证每群保有编队规模
+    for (let i = 0; i < n && this.fish.length > 0; i++) {
+      // 优先从仍高于下限的最大群中移除普通鱼（保留 leader）
+      let target = null;
+      for (const sc of this.schools) {
+        if (sc.fish.length > minSchool && (!target || sc.fish.length > target.fish.length)) target = sc;
+      }
+      if (target) {
+        let idx = -1;
+        for (let j = target.fish.length - 1; j >= 0; j--) {
+          if (!target.fish[j].isLeader) { idx = j; break; }
+        }
+        if (idx < 0) continue;
+        const f = target.fish[idx];
+        target.fish.splice(idx, 1);
+        const gi = this.fish.indexOf(f);
+        if (gi >= 0) this.fish.splice(gi, 1);
+        continue;
+      }
+      // 所有群都到了下限：解散最小的群（含 leader），维持总数守恒
+      if (!this.schools.length) break;
+      let smallest = this.schools[0];
+      for (const sc of this.schools) if (sc.fish.length < smallest.fish.length) smallest = sc;
+      for (const f of smallest.fish) {
+        const gi = this.fish.indexOf(f);
+        if (gi >= 0) this.fish.splice(gi, 1);
+      }
+      this.schools = this.schools.filter(s => s !== smallest);
+    }
   }
 
   addFlow(x, y, vx, vy) {
