@@ -1,7 +1,90 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#06121f"><meta name="description" content="AQUA — 基于 Boids、Spatial Grid 与 Canvas 2D 的实时鱼群仿真。"><title>AQUA — 灵动鱼群</title>
-<meta property="og:title" content="AQUA — 灵动鱼群">
-<meta property="og:description" content="基于 Boids、Spatial Grid 与 Canvas 2D 的实时鱼群仿真交互应用">
-<meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐟</text></svg>">
-<link rel="stylesheet" href="./css/main.css"></head><body><canvas id="c" role="img" aria-label="AQUA 灵动鱼群仿真实时渲染画布"></canvas><div class="bg"></div><div class="rays"></div><div class="vignette"></div><main class="hud"><div class="top"><section class="brand"><div class="eyebrow"><i class="dot"></i>INTERACTIVE SIMULATION</div><h1>AQUA</h1><p class="sub">Boids · 群体智能 · Canvas 2D</p></section><aside class="panel"><div class="title">SIMULATION</div><div class="row" data-tip="Fish" data-text="鱼群数量。数量越高越密集，也会增加 CPU 计算量。"><label for="count">Fish</label><input id="count" type="range" min="60" max="300" value="160"><span class="val" id="cv">160</span></div><div class="row" data-tip="Speed" data-text="鱼群整体游动速度。数值越高，运动越活跃。"><label for="speed">Speed</label><input id="speed" type="range" min="50" max="160" value="90"><span class="val" id="sv">0.9×</span></div><div class="row" data-tip="Attraction" data-text="按住鼠标时的聚拢力度。越高，鱼群越快靠近指针。"><label for="attr">Attraction</label><input id="attr" type="range" min="30" max="150" value="65"><span class="val" id="av">0.65</span></div><button id="reset">重新生成鱼群</button>
-<button id="sound" class="sound-btn">🔊 声音</button></aside></div><div class="mobile"><button id="toggle">控制</button><button id="mreset">重置</button></div><div class="mpanel panel" id="mp"><div class="title">SIMULATION</div><div class="row"><label for="mc">Fish</label><input id="mc" type="range" min="50" max="120" value="70"><span class="val" id="mcv">70</span></div><div class="row"><label for="ms">Speed</label><input id="ms" type="range" min="50" max="160" value="80"><span class="val" id="msv">0.8×</span></div><div class="row"><label for="ma">Attraction</label><input id="ma" type="range" min="30" max="150" value="60"><span class="val" id="mav">0.60</span></div></div><div class="bottom"><div class="hint"><b>移动指针</b> 水流 · <b>按住左键</b> 聚拢 · <b>点击</b> 水波</div><div class="stats"><div class="stat"><span>SCHOOL</span><b id="fs">160</b></div><div class="stat"><span>FPS</span><b id="fps">60</b></div><div class="stat"><span>SIM</span><b id="sim">60Hz</b></div></div></div></main><div class="touch">触摸拖动：水流与波纹 · 长按：聚拢</div><div class="tip" id="tip"><b></b><span></span></div><script type="module" src="./js/main.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#06121f">
+  <meta name="description" content="AQUA — 基于 Boids、Spatial Grid 与 Canvas 2D 的实时鱼群仿真。">
+  <title>AQUA — 灵动鱼群</title>
+  <meta property="og:title" content="AQUA — 灵动鱼群">
+  <meta property="og:description" content="基于 Boids、Spatial Grid 与 Canvas 2D 的实时鱼群仿真交互应用">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐟</text></svg>">
+  <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+  <canvas id="c" role="img" aria-label="AQUA 灵动鱼群仿真实时渲染画布"></canvas>
+  <div class="bg"></div>
+  <div class="rays"></div>
+  <div class="vignette"></div>
+
+  <main class="hud">
+    <div class="top">
+      <section class="brand">
+        <div class="eyebrow"><i class="dot"></i>INTERACTIVE SIMULATION</div>
+        <h1>AQUA</h1>
+        <p class="sub">Boids · 群体智能 · Canvas 2D</p>
+      </section>
+
+      <aside class="panel">
+        <div class="title">SIMULATION</div>
+        <div class="row" data-tip="Fish" data-text="鱼群数量。数量越高越密集，也会增加 CPU 计算量。">
+          <label for="count">Fish</label>
+          <input id="count" type="range" min="60" max="300" value="160">
+          <span class="val" id="cv">160</span>
+        </div>
+        <div class="row" data-tip="Speed" data-text="鱼群整体游动速度。数值越高，运动越活跃。">
+          <label for="speed">Speed</label>
+          <input id="speed" type="range" min="50" max="160" value="90">
+          <span class="val" id="sv">0.9×</span>
+        </div>
+        <div class="row" data-tip="Attraction" data-text="按住鼠标时的聚拢力度。越高，鱼群越快靠近指针。">
+          <label for="attr">Attraction</label>
+          <input id="attr" type="range" min="30" max="150" value="65">
+          <span class="val" id="av">0.65</span>
+        </div>
+        <button id="reset">重新生成鱼群</button>
+        <button id="sound" class="sound-btn">🔊 声音</button>
+      </aside>
+    </div>
+
+    <div class="mobile">
+      <button id="toggle">控制</button>
+      <button id="mreset">重置</button>
+    </div>
+
+    <div class="mpanel panel" id="mp">
+      <div class="title">SIMULATION</div>
+      <div class="row">
+        <label for="mc">Fish</label>
+        <input id="mc" type="range" min="50" max="120" value="70">
+        <span class="val" id="mcv">70</span>
+      </div>
+      <div class="row">
+        <label for="ms">Speed</label>
+        <input id="ms" type="range" min="50" max="160" value="80">
+        <span class="val" id="msv">0.8×</span>
+      </div>
+      <div class="row">
+        <label for="ma">Attraction</label>
+        <input id="ma" type="range" min="30" max="150" value="60">
+        <span class="val" id="mav">0.60</span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="hint"><b>移动指针</b> 水流 · <b>按住左键</b> 聚拢 · <b>点击</b> 水波</div>
+      <div class="stats">
+        <div class="stat"><span>SCHOOL</span><b id="fs">160</b></div>
+        <div class="stat"><span>FPS</span><b id="fps">60</b></div>
+        <div class="stat"><span>SIM</span><b id="sim">60Hz</b></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="touch">触摸拖动：水流与波纹 · 长按：聚拢</div>
+  <div class="tip" id="tip"><b></b><span></span></div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

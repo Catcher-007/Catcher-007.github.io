@@ -1,0 +1,13 @@
+{
+  "name": "aqua-boids",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AQUA · 灵动鱼群 — 基于 Boids、Spatial Grid 与 Canvas 2D 的实时鱼群仿真",
+  "scripts": {
+    "start": "python3 -m http.server ${PORT:-8000} --bind 0.0.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -56,8 +56,11 @@
 纯静态站点，任选一种方式：
 
 ```bash
+# npm（推荐，等价于 python3 方式）
+npm start
+
 # Python
-python3 -m http.server 8000
+python3 -m http.server 8000 --bind 0.0.0.0
 
 # Node
 npx serve -l 8000
