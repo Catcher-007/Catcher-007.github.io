@@ -79,32 +79,23 @@ export class Fish {
   }
 
   edge() {
-    const margin = 20;
-    const jitter = 24;
-    const minY = Math.min(margin, Math.max(0, this.height * .5));
-    const maxY = Math.max(minY, this.height - margin);
-    const minX = Math.min(margin, Math.max(0, this.width * .5));
-    const maxX = Math.max(minX, this.width - margin);
+    if (!this.width || !this.height) return;
+    const margin = 40;        // 软转向力开始作用的边距
+    const hard = 90;          // 超出此距离仍触发硬兜底，防止极端情况逃逸
+    const force = .018;       // 边缘转向力强度（在 acc 限幅内柔和生效）
+    const w = this.width, h = this.height;
 
-    const outLeft = this.x < -margin;
-    const outRight = this.x > this.width + margin;
-    const outTop = this.y < -margin;
-    const outBottom = this.y > this.height + margin;
+    // 接近边缘 → 施加回转力，使鱼在编队中自然转弯而非瞬移
+    if (this.x < margin) { this.accx += force * (1 - this.x / margin); }
+    else if (this.x > w - margin) { this.accx -= force * (1 - (w - this.x) / margin); }
+    if (this.y < margin) { this.accy += force * (1 - this.y / margin); }
+    else if (this.y > h - margin) { this.accy -= force * (1 - (h - this.y) / margin); }
 
-    if (outLeft || outRight) {
-      this.x = outLeft ? this.width + margin : -margin;
-      this.y = Math.min(maxY, Math.max(minY, this.y + (Math.random() * 2 - 1) * jitter));
-    }
-
-    if (outTop || outBottom) {
-      this.y = outTop ? this.height + margin : -margin;
-      this.x = Math.min(maxX, Math.max(minX, this.x + (Math.random() * 2 - 1) * jitter));
-    }
-
-    if (outLeft || outRight || outTop || outBottom) {
-      this.trailX = this.x;
-      this.trailY = this.y;
-    }
+    // 硬兜底：超出 hard 距离时瞬移回对侧，保留 wrap 以应对极端逃逸
+    const outX = this.x < -hard || this.x > w + hard;
+    const outY = this.y < -hard || this.y > h + hard;
+    if (outX) { this.x = this.x < 0 ? w + hard : -hard; this.trailX = this.x; }
+    if (outY) { this.y = this.y < 0 ? h + hard : -hard; this.trailY = this.y; }
   }
 
   draw(ctx) {

@@ -8,8 +8,15 @@ export class BackgroundBubbles {
   }
 
   resize(width, height) {
+    const oldArea = this.width * this.height || 1;
     this.width = width;
     this.height = height;
+    // 面积增长超过 20% 时补种气泡，避免窗口放大后新区域无覆盖
+    const newArea = width * height || 1;
+    if (newArea > oldArea * 1.2) {
+      const deficit = Math.floor(this.count * (1 - oldArea / newArea));
+      for (let i = 0; i < deficit; i++) this.items.push(this.#spawn(false));
+    }
   }
 
   seed() {

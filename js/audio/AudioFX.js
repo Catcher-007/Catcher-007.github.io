@@ -4,12 +4,34 @@ export class AudioFX {
     this.master = null;
     this.noiseBuffer = null;
     this.lastSlider = 0;
+    this.muted = false;
+    this._volume = .5;
   }
 
   // 浏览器自动播放策略：必须在用户手势中调用 resume 才能出声
   unlock() {
     if (!this.ctx) this.#init();
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  }
+
+  toggleMute() {
+    this.muted = !this.muted;
+    if (this.master) this.master.gain.value = this.muted ? 0 : this._volume;
+    return this.muted;
+  }
+
+  setVolume(v) {
+    this._volume = v;
+    if (this.master && !this.muted) this.master.gain.value = v;
+  }
+
+  // 页面不可见时挂起 AudioContext，节省系统音频资源
+  suspendOnHidden() {
+    document.addEventListener('visibilitychange', () => {
+      if (!this.ctx) return;
+      if (document.hidden) this.ctx.suspend();
+      else this.ctx.resume();
+    });
   }
 
   #init() {
