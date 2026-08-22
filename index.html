@@ -26,31 +26,43 @@
         <p class="sub">Boids · 群体智能 · Canvas 2D</p>
       </section>
 
-      <aside class="panel">
-        <div class="title">SIMULATION</div>
-        <div class="row" data-tip="Fish" data-text="鱼群数量。数量越高越密集，也会增加 CPU 计算量。">
-          <label for="count">Fish</label>
-          <input id="count" type="range" min="60" max="300" value="160">
-          <span class="val" id="cv">160</span>
+      <aside class="panel" id="panel">
+        <div class="title panel-head">
+          <span>SIMULATION</span>
+          <button id="collapse" class="collapse-btn" aria-expanded="true" aria-controls="panel-body" title="收起面板" aria-label="收起或展开控制面板">▾</button>
         </div>
-        <div class="row" data-tip="Speed" data-text="鱼群整体游动速度。数值越高，运动越活跃。">
-          <label for="speed">Speed</label>
-          <input id="speed" type="range" min="50" max="160" value="90">
-          <span class="val" id="sv">0.9×</span>
+        <div id="panel-body">
+          <div class="row" data-tip="Fish" data-text="鱼群数量。数量越高越密集，也会增加 CPU 计算量。">
+            <label for="count">Fish</label>
+            <input id="count" type="range" min="60" max="300" value="160">
+            <span class="val" id="cv">160</span>
+          </div>
+          <div class="row" data-tip="Speed" data-text="鱼群整体游动速度。数值越高，运动越活跃。">
+            <label for="speed">Speed</label>
+            <input id="speed" type="range" min="50" max="160" value="90">
+            <span class="val" id="sv">0.9×</span>
+          </div>
+          <div class="row" data-tip="Attraction" data-text="按住鼠标时的聚拢力度。越高，鱼群越快靠近指针。">
+            <label for="attr">Attraction</label>
+            <input id="attr" type="range" min="30" max="150" value="65">
+            <span class="val" id="av">0.65</span>
+          </div>
+          <button id="reset">重新生成鱼群</button>
+          <button id="sound" class="sound-btn" aria-pressed="false">🔇 声音关</button>
+          <div class="sound-channels" id="channels" hidden>
+            <button data-ch="water" class="chip on" aria-pressed="true">水流</button>
+            <button data-ch="merge" class="chip on" aria-pressed="true">合并</button>
+            <button data-ch="reset" class="chip on" aria-pressed="true">重置</button>
+            <button data-ch="slider" class="chip on" aria-pressed="true">滑块</button>
+          </div>
         </div>
-        <div class="row" data-tip="Attraction" data-text="按住鼠标时的聚拢力度。越高，鱼群越快靠近指针。">
-          <label for="attr">Attraction</label>
-          <input id="attr" type="range" min="30" max="150" value="65">
-          <span class="val" id="av">0.65</span>
-        </div>
-        <button id="reset">重新生成鱼群</button>
-        <button id="sound" class="sound-btn">🔊 声音</button>
       </aside>
     </div>
 
     <div class="mobile">
       <button id="toggle">控制</button>
       <button id="mreset">重置</button>
+      <button id="msound" aria-pressed="false" aria-label="声音开关">🔇</button>
     </div>
 
     <div class="mpanel panel" id="mp">
