@@ -93,7 +93,8 @@ export class Simulation {
 
   #removeFish(n) {
     const minSchool = 6; // 与 #distribute 的单群下限一致，保证每群保有编队规模
-    for (let i = 0; i < n && this.fish.length > 0; i++) {
+    let removed = 0;
+    while (removed < n && this.fish.length > 0) {
       // 优先从仍高于下限的最大群中移除普通鱼（保留 leader）
       let target = null;
       for (const sc of this.schools) {
@@ -104,22 +105,40 @@ export class Simulation {
         for (let j = target.fish.length - 1; j >= 0; j--) {
           if (!target.fish[j].isLeader) { idx = j; break; }
         }
-        if (idx < 0) continue;
-        const f = target.fish[idx];
-        target.fish.splice(idx, 1);
-        const gi = this.fish.indexOf(f);
-        if (gi >= 0) this.fish.splice(gi, 1);
+        if (idx >= 0) {
+          const f = target.fish.splice(idx, 1)[0];
+          const gi = this.fish.indexOf(f);
+          if (gi >= 0) this.fish.splice(gi, 1);
+          removed++;
+        }
         continue;
       }
-      // 所有群都到了下限：解散最小的群（含 leader），维持总数守恒
-      if (!this.schools.length) break;
-      let smallest = this.schools[0];
-      for (const sc of this.schools) if (sc.fish.length < smallest.fish.length) smallest = sc;
-      for (const f of smallest.fish) {
+      // 所有群都到了下限：从最小的群移除。需求足够时整群解散，否则逐条删——
+      // 无论哪种路径都精确累计 removed，保证主表长度与 count 严格守恒
+      let smallest = null;
+      for (const sc of this.schools) {
+        if (!smallest || sc.fish.length < smallest.fish.length) smallest = sc;
+      }
+      if (!smallest) break;
+      const remaining = n - removed;
+      if (remaining >= smallest.fish.length) {
+        for (const f of smallest.fish) {
+          const gi = this.fish.indexOf(f);
+          if (gi >= 0) this.fish.splice(gi, 1);
+        }
+        removed += smallest.fish.length;
+        this.schools = this.schools.filter(s => s !== smallest);
+      } else {
+        let idx = -1;
+        for (let j = smallest.fish.length - 1; j >= 0; j--) {
+          if (!smallest.fish[j].isLeader) { idx = j; break; }
+        }
+        const f = idx >= 0 ? smallest.fish.splice(idx, 1)[0] : smallest.fish.pop();
         const gi = this.fish.indexOf(f);
         if (gi >= 0) this.fish.splice(gi, 1);
+        removed++;
+        if (!smallest.fish.length || idx < 0) this.schools = this.schools.filter(s => s !== smallest);
       }
-      this.schools = this.schools.filter(s => s !== smallest);
     }
   }
 

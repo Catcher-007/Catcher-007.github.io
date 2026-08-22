@@ -39,7 +39,8 @@ export class AudioFX {
     if (!AC) return;
     this.ctx = new AC();
     this.master = this.ctx.createGain();
-    this.master.gain.value = .5;
+    // 尊重初始化前的静音状态：用户可能在 ctx 创建前就点了静音按钮
+    this.master.gain.value = this.muted ? 0 : this._volume;
     this.master.connect(this.ctx.destination);
     const len = this.ctx.sampleRate;
     this.noiseBuffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
